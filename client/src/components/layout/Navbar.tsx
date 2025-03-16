@@ -60,6 +60,13 @@ const Navbar = () => {
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link href="/contact">
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    Contact
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
 
@@ -85,6 +92,9 @@ const Navbar = () => {
               </Link>
               <Link href="/sponsors">
                 <a className="text-lg" onClick={() => setIsMenuOpen(false)}>Sponsors</a>
+              </Link>
+              <Link href="/contact">
+                <a className="text-lg" onClick={() => setIsMenuOpen(false)}>Contact</a>
               </Link>
               <Link href="/register">
                 <Button 

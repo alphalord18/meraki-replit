@@ -25,7 +25,6 @@ const events = [
   { id: "storytelling", name: "Storytelling Contest", maxParticipants: 1 },
 ];
 
-// Enhanced validation schema
 const registrationSchema = z.object({
   schoolName: z.string()
     .min(3, "School name must be at least 3 characters")
@@ -63,16 +62,20 @@ const registrationSchema = z.object({
         .regex(/^([6-9]|1[0-2])$/, "Grade must be between 6 and 12")
     })
   ).refine(participants => {
+    // Check if we have exact number of participants for each event
     const eventCounts = participants.reduce((acc, p) => {
       acc[p.eventId] = (acc[p.eventId] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
-    return Object.entries(eventCounts).every(([eventId, count]) => {
+    for (const eventId of Object.keys(eventCounts)) {
       const event = events.find(e => e.id === eventId);
-      return count <= (event?.maxParticipants || 0);
-    });
-  }, "Maximum number of participants exceeded for one or more events"),
+      if (!event || eventCounts[eventId] !== event.maxParticipants) {
+        return false;
+      }
+    }
+    return true;
+  }, "Please add the exact number of required participants for each event"),
 });
 
 type RegistrationData = z.infer<typeof registrationSchema>;
@@ -117,6 +120,12 @@ const Register = () => {
   });
 
   const onSubmit = async (data: RegistrationData) => {
+    // Validate all participants are added before submission
+    const isValid = await validateStep();
+    if (!isValid) {
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const eventParticipants = selectedEvents.reduce((acc, eventId) => {
@@ -200,16 +209,25 @@ const Register = () => {
     form.setValue("participants", [...participants, newParticipant]);
   };
 
-  const validateStep = () => {
+  const validateStep = async () => {
     switch (currentStep) {
       case 0:
-        return form.trigger(["schoolName", "schoolAddress"]);
+        return await form.trigger(["schoolName", "schoolAddress"]);
       case 1:
-        return form.trigger(["coordinatorName", "coordinatorEmail", "coordinatorPhone"]);
+        return await form.trigger(["coordinatorName", "coordinatorEmail", "coordinatorPhone"]);
       case 2:
-        return form.trigger(["selectedEvents"]);
+        return await form.trigger(["selectedEvents"]);
       case 3:
-        return form.trigger(["participants"]);
+        // Validate participants before allowing submission
+        const isValid = await form.trigger("participants");
+        if (!isValid) {
+          toast({
+            variant: "destructive",
+            title: "Validation Error",
+            description: "Please add all required participants for each event.",
+          });
+        }
+        return isValid;
       default:
         return true;
     }
@@ -375,7 +393,7 @@ const Register = () => {
                               <h3 className="font-semibold">{event.name}</h3>
                               {eventParticipants.map((participant, index) => (
                                 <div key={index} className="grid grid-cols-2 gap-4">
-                                  <Input 
+                                  <Input
                                     placeholder="Participant Name"
                                     value={participant.name}
                                     onChange={(e) => {
@@ -385,7 +403,7 @@ const Register = () => {
                                       form.setValue("participants", newParticipants);
                                     }}
                                   />
-                                  <Input 
+                                  <Input
                                     placeholder="Grade (6-12)"
                                     value={participant.grade}
                                     onChange={(e) => {
