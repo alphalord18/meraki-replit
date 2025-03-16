@@ -13,7 +13,7 @@ const CountdownTimer = () => {
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const eventDate = new Date('2025-03-15'); // Event start date
+      const eventDate = new Date('2025-08-22'); // Updated event date
       const difference = eventDate.getTime() - new Date().getTime();
 
       if (difference > 0) {
@@ -135,8 +135,7 @@ const Hero = () => {
             </Button>
             <Button 
               size="lg"
-              variant="outline"
-              className="text-white border-white hover:bg-white/10"
+              className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white"
             >
               View Events <Calendar className="ml-2" />
             </Button>

@@ -1,22 +1,50 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Calendar, Clock, MapPin } from "lucide-react";
-import type { Event } from "@shared/schema";
+
+// Temporary event data
+const tempEvents = [
+  {
+    id: 1,
+    title: "Poetry Slam Championship",
+    description: "Express your emotions through verses in this competitive poetry event",
+    date: "2025-08-23",
+    venue: "Main Auditorium",
+    category: "Poetry",
+    rules: `
+      <h4>Rules & Guidelines:</h4>
+      <ul>
+        <li>Original content only</li>
+        <li>3-5 minutes per performance</li>
+        <li>No props or musical instruments</li>
+        <li>Judging based on content, delivery, and audience impact</li>
+      </ul>
+    `,
+  },
+  {
+    id: 2,
+    title: "Literary Debate Competition",
+    description: "Engage in intellectual discourse on contemporary literary topics",
+    date: "2025-08-24",
+    venue: "Conference Hall",
+    category: "Debate",
+    rules: `
+      <h4>Rules & Guidelines:</h4>
+      <ul>
+        <li>Teams of 2 members</li>
+        <li>7 minutes per speaker</li>
+        <li>Topics will be provided 1 hour before the debate</li>
+        <li>Constructive arguments and rebuttals expected</li>
+      </ul>
+    `,
+  },
+  // Add more events as needed
+];
 
 const Events = () => {
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-
-  const { data: events, isLoading } = useQuery({
-    queryKey: ["/api/events"],
-  });
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
   return (
     <div className="min-h-screen bg-[#F4F4F4] py-20">
@@ -26,7 +54,7 @@ const Events = () => {
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {events?.map((event) => (
+          {tempEvents.map((event) => (
             <motion.div
               key={event.id}
               whileHover={{ scale: 1.02 }}
@@ -38,7 +66,7 @@ const Events = () => {
                   <h3 className="text-xl font-bold mb-2" style={{ fontFamily: "Editorial New Bold" }}>
                     {event.title}
                   </h3>
-                  <p className="text-gray-600 mb-4">{event.description.slice(0, 100)}...</p>
+                  <p className="text-gray-600 mb-4">{event.description}</p>
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Calendar className="w-4 h-4" />
                     {new Date(event.date).toLocaleDateString()}
@@ -64,7 +92,7 @@ const Events = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+              className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
               onClick={() => setSelectedEvent(null)}
             >
               <motion.div
@@ -78,7 +106,7 @@ const Events = () => {
                   <h2 className="text-3xl font-bold mb-4" style={{ fontFamily: "Editorial New Bold" }}>
                     {selectedEvent.title}
                   </h2>
-                  
+
                   <div className="flex items-center gap-4 mb-6 text-gray-600">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-5 h-5" />
@@ -101,7 +129,6 @@ const Events = () => {
                     <h3 className="text-xl font-semibold mb-2">Rules & Guidelines</h3>
                     <div dangerouslySetInnerHTML={{ __html: selectedEvent.rules }} />
                   </div>
-
                   <div className="mt-8 flex justify-end">
                     <Button onClick={() => setSelectedEvent(null)}>Close</Button>
                   </div>

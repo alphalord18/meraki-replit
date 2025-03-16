@@ -50,9 +50,9 @@ const Navbar = () => {
         </NavigationMenu>
 
         <div className="flex items-center gap-4">
-          <Link href="/admin/login">
-            <Button variant="ghost">Admin Login</Button>
-          </Link>
+          <Button className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white">
+            Register Now
+          </Button>
         </div>
       </div>
     </header>

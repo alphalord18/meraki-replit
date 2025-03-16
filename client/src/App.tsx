@@ -10,8 +10,6 @@ import Events from "@/pages/events";
 import Speakers from "@/pages/speakers";
 import Blog from "@/pages/blog";
 import Sponsors from "@/pages/sponsors";
-import AdminLogin from "@/pages/admin/login";
-import AdminDashboard from "@/pages/admin/dashboard";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -25,8 +23,6 @@ function Router() {
           <Route path="/speakers" component={Speakers} />
           <Route path="/blog" component={Blog} />
           <Route path="/sponsors" component={Sponsors} />
-          <Route path="/admin/login" component={AdminLogin} />
-          <Route path="/admin/dashboard" component={AdminDashboard} />
           <Route component={NotFound} />
         </Switch>
       </main>
