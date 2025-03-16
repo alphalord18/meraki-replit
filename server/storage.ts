@@ -151,6 +151,11 @@ export class MemStorage implements IStorage {
     this.sponsors.set(id, newSponsor);
     return newSponsor;
   }
+
+  async createRegistration(registration: any) {
+    const registrationsRef = collection(db, "registrations");
+    return await addDoc(registrationsRef, registration);
+  }
 }
 
 export const storage = new MemStorage();
