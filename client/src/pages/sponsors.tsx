@@ -37,11 +37,35 @@ const sponsorshipTiers = [
   }
 ];
 
-const Sponsors = () => {
-  const { data: sponsors } = useQuery({
-    queryKey: ["/api/sponsors"],
-  });
+// Temporary past sponsors data
+const tempSponsors = [
+  {
+    id: 1,
+    name: "TechCorp Inc.",
+    logoUrl: "https://placehold.co/200x200?text=TechCorp",
+    website: "https://example.com"
+  },
+  {
+    id: 2,
+    name: "Global Books",
+    logoUrl: "https://placehold.co/200x200?text=GlobalBooks",
+    website: "https://example.com"
+  },
+  {
+    id: 3,
+    name: "EduTech Solutions",
+    logoUrl: "https://placehold.co/200x200?text=EduTech",
+    website: "https://example.com"
+  },
+  {
+    id: 4,
+    name: "Creative Arts Foundation",
+    logoUrl: "https://placehold.co/200x200?text=CreativeArts",
+    website: "https://example.com"
+  }
+];
 
+const Sponsors = () => {
   return (
     <div className="min-h-screen bg-[#F4F4F4]">
       {/* Sponsorship Packages */}
@@ -95,8 +119,8 @@ const Sponsors = () => {
 
           <div className="relative overflow-hidden">
             <div className="flex animate-scrolling-logos">
-              {sponsors?.map((sponsor) => (
-                <div key={sponsor.id} className="flex-none mx-8">
+              {[...tempSponsors, ...tempSponsors].map((sponsor, index) => (
+                <div key={`${sponsor.id}-${index}`} className="flex-none mx-8">
                   <a
                     href={sponsor.website}
                     target="_blank"

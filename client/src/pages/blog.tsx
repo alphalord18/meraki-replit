@@ -5,18 +5,41 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
-import type { Blog } from "@shared/schema";
+
+// Temporary blog data
+const tempBlogs = [
+  {
+    id: 1,
+    title: "The Evolution of Modern Poetry",
+    author: "Dr. Sarah Johnson",
+    content: `<p>In recent years, we've witnessed a remarkable transformation in how poetry is created, shared, and consumed. The digital age has brought forth new forms of expression, challenging traditional conventions while preserving the essence of poetic artistry.</p>
+    <p>Modern poets are increasingly experimenting with multimedia elements, combining words with visual and auditory components to create immersive experiences. This evolution reflects our changing relationship with language and communication in the digital era.</p>
+    <p>The democratization of poetry through social media and online platforms has also led to the emergence of diverse voices and perspectives, enriching the literary landscape in unprecedented ways.</p>`,
+    imageUrl: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&q=80",
+    createdAt: "2025-02-15"
+  },
+  {
+    id: 2,
+    title: "Storytelling in the Digital Age",
+    author: "Prof. James Mitchell",
+    content: `<p>The art of storytelling has undergone a significant transformation with the advent of digital technology. While the fundamental elements of a compelling narrative remain unchanged, the mediums through which stories are told have multiplied exponentially.</p>
+    <p>Digital platforms have enabled interactive storytelling, where readers can influence the narrative's direction, creating a more engaging and personalized experience. This has led to the emergence of new literary forms that blur the lines between traditional storytelling and interactive entertainment.</p>`,
+    imageUrl: "https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&q=80",
+    createdAt: "2025-02-20"
+  }
+];
+
+type Blog = {
+  id: number;
+  title: string;
+  author: string;
+  content: string;
+  imageUrl: string;
+  createdAt: string;
+};
 
 const Blog = () => {
   const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
-
-  const { data: blogs, isLoading } = useQuery({
-    queryKey: ["/api/blogs"],
-  });
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className="min-h-screen bg-[#F4F4F4] py-20">
@@ -26,7 +49,7 @@ const Blog = () => {
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {blogs?.map((blog) => (
+          {tempBlogs.map((blog) => (
             <motion.div
               key={blog.id}
               whileHover={{ scale: 1.02 }}
@@ -96,7 +119,7 @@ const Blog = () => {
                       {selectedBlog.title}
                     </h2>
                     <p className="text-gray-600 mb-6">By {selectedBlog.author}</p>
-                    
+
                     <div className="prose max-w-none">
                       <div dangerouslySetInnerHTML={{ __html: selectedBlog.content }} />
                     </div>

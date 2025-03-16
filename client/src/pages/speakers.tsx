@@ -1,22 +1,62 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Linkedin, Twitter, Globe } from "lucide-react";
-import type { Speaker } from "@shared/schema";
+
+// Temporary speaker data
+const tempSpeakers = [
+  {
+    id: 1,
+    name: "Dr. Sarah Johnson",
+    designation: "Literary Critic & Author",
+    imageUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80",
+    bio: "Dr. Sarah Johnson is a renowned literary critic and author of multiple bestselling books. She has been analyzing contemporary literature for over two decades.",
+    socialLinks: {
+      linkedin: "https://linkedin.com",
+      twitter: "https://twitter.com",
+      website: "https://example.com"
+    }
+  },
+  {
+    id: 2,
+    name: "Prof. James Mitchell",
+    designation: "Poetry Expert",
+    imageUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80",
+    bio: "Professor Mitchell has dedicated his life to teaching and analyzing poetry. His workshops have inspired thousands of young poets.",
+    socialLinks: {
+      linkedin: "https://linkedin.com",
+      twitter: "https://twitter.com"
+    }
+  },
+  {
+    id: 3,
+    name: "Emily Chen",
+    designation: "Creative Writing Coach",
+    imageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80",
+    bio: "Emily Chen is a creative writing coach who has helped numerous aspiring writers find their voice and style.",
+    socialLinks: {
+      website: "https://example.com"
+    }
+  }
+];
+
+interface Speaker {
+  id: number;
+  name: string;
+  designation: string;
+  imageUrl: string;
+  bio: string;
+  socialLinks?: {
+    linkedin?: string;
+    twitter?: string;
+    website?: string;
+  };
+}
 
 const Speakers = () => {
   const [selectedSpeaker, setSelectedSpeaker] = useState<Speaker | null>(null);
-
-  const { data: speakers, isLoading } = useQuery({
-    queryKey: ["/api/speakers"],
-  });
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className="min-h-screen bg-[#F4F4F4] py-20">
@@ -26,7 +66,7 @@ const Speakers = () => {
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {speakers?.map((speaker) => (
+          {tempSpeakers.map((speaker) => (
             <motion.div
               key={speaker.id}
               whileHover={{ scale: 1.02 }}
@@ -62,7 +102,7 @@ const Speakers = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+              className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
               onClick={() => setSelectedSpeaker(null)}
             >
               <motion.div
@@ -86,7 +126,7 @@ const Speakers = () => {
                         {selectedSpeaker.name}
                       </h2>
                       <p className="text-xl text-gray-600 mb-4">{selectedSpeaker.designation}</p>
-                      
+
                       <div className="prose max-w-none mb-6">
                         <p>{selectedSpeaker.bio}</p>
                       </div>
