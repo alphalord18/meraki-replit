@@ -25,18 +25,54 @@ const events = [
   { id: "storytelling", name: "Storytelling Contest", maxParticipants: 1 },
 ];
 
+// Enhanced validation schema
 const registrationSchema = z.object({
-  schoolName: z.string().min(1, "School name is required"),
-  schoolAddress: z.string().min(1, "School address is required"),
-  coordinatorName: z.string().min(1, "Coordinator name is required"),
-  coordinatorEmail: z.string().email("Invalid email address"),
-  coordinatorPhone: z.string().min(10, "Phone number must be at least 10 digits"),
-  selectedEvents: z.array(z.string()).min(1, "Select at least one event"),
-  participants: z.array(z.object({
-    eventId: z.string(),
-    name: z.string().min(1, "Participant name is required"),
-    grade: z.string().min(1, "Grade is required"),
-  })),
+  schoolName: z.string()
+    .min(3, "School name must be at least 3 characters")
+    .max(100, "School name must not exceed 100 characters")
+    .regex(/^[a-zA-Z0-9\s'.&-]+$/, "School name can only contain letters, numbers, spaces, and basic punctuation"),
+
+  schoolAddress: z.string()
+    .min(10, "Please provide a complete school address")
+    .max(200, "Address must not exceed 200 characters"),
+
+  coordinatorName: z.string()
+    .min(3, "Coordinator name must be at least 3 characters")
+    .max(50, "Coordinator name must not exceed 50 characters")
+    .regex(/^[a-zA-Z\s'.]+$/, "Coordinator name can only contain letters and basic punctuation"),
+
+  coordinatorEmail: z.string()
+    .email("Invalid email address")
+    .refine(email => email.includes('.'), "Email must contain a domain"),
+
+  coordinatorPhone: z.string()
+    .regex(/^\+?[0-9]{10,12}$/, "Phone number must be 10-12 digits, optionally starting with +"),
+
+  selectedEvents: z.array(z.string())
+    .min(1, "Select at least one event")
+    .max(3, "Maximum 3 events can be selected"),
+
+  participants: z.array(
+    z.object({
+      eventId: z.string(),
+      name: z.string()
+        .min(3, "Participant name must be at least 3 characters")
+        .max(50, "Participant name must not exceed 50 characters")
+        .regex(/^[a-zA-Z\s'.]+$/, "Participant name can only contain letters and basic punctuation"),
+      grade: z.string()
+        .regex(/^([6-9]|1[0-2])$/, "Grade must be between 6 and 12")
+    })
+  ).refine(participants => {
+    const eventCounts = participants.reduce((acc, p) => {
+      acc[p.eventId] = (acc[p.eventId] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(eventCounts).every(([eventId, count]) => {
+      const event = events.find(e => e.id === eventId);
+      return count <= (event?.maxParticipants || 0);
+    });
+  }, "Maximum number of participants exceeded for one or more events"),
 });
 
 type RegistrationData = z.infer<typeof registrationSchema>;
@@ -89,17 +125,26 @@ const Register = () => {
         return acc;
       }, {} as Record<string, typeof participants>);
 
-      await addDoc(collection(db, "registrations"), {
+      const registrationData = {
         ...data,
         eventParticipants,
         createdAt: new Date().toISOString(),
         status: "pending",
-      });
+        registrationId: `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase(),
+      };
+
+      await addDoc(collection(db, "registrations"), registrationData);
 
       toast({
         title: "Registration successful",
-        description: "We will contact you shortly with further details.",
+        description: `Your registration ID is ${registrationData.registrationId}. Please save this for future reference.`,
       });
+
+      // Reset form after successful submission
+      form.reset();
+      setSelectedEvents([]);
+      setParticipants([]);
+      setCurrentStep(0);
     } catch (error) {
       console.error("Registration error:", error);
       toast({
@@ -113,17 +158,68 @@ const Register = () => {
   };
 
   const handleEventSelect = (eventId: string) => {
+    if (selectedEvents.length >= 3 && !selectedEvents.includes(eventId)) {
+      toast({
+        variant: "destructive",
+        title: "Maximum events reached",
+        description: "You can only select up to 3 events.",
+      });
+      return;
+    }
+
     const newEvents = selectedEvents.includes(eventId)
       ? selectedEvents.filter(id => id !== eventId)
       : [...selectedEvents, eventId];
+
     setSelectedEvents(newEvents);
     form.setValue("selectedEvents", newEvents);
+
+    // Remove participants for deselected event
+    if (selectedEvents.includes(eventId) && !newEvents.includes(eventId)) {
+      const newParticipants = participants.filter(p => p.eventId !== eventId);
+      setParticipants(newParticipants);
+      form.setValue("participants", newParticipants);
+    }
   };
 
   const handleParticipantAdd = (eventId: string) => {
+    const event = events.find(e => e.id === eventId)!;
+    const eventParticipants = participants.filter(p => p.eventId === eventId);
+
+    if (eventParticipants.length >= event.maxParticipants) {
+      toast({
+        variant: "destructive",
+        title: "Maximum participants reached",
+        description: `You can only add up to ${event.maxParticipants} participants for ${event.name}.`,
+      });
+      return;
+    }
+
     const newParticipant = { eventId, name: "", grade: "" };
     setParticipants([...participants, newParticipant]);
     form.setValue("participants", [...participants, newParticipant]);
+  };
+
+  const validateStep = () => {
+    switch (currentStep) {
+      case 0:
+        return form.trigger(["schoolName", "schoolAddress"]);
+      case 1:
+        return form.trigger(["coordinatorName", "coordinatorEmail", "coordinatorPhone"]);
+      case 2:
+        return form.trigger(["selectedEvents"]);
+      case 3:
+        return form.trigger(["participants"]);
+      default:
+        return true;
+    }
+  };
+
+  const handleNext = async () => {
+    const isValid = await validateStep();
+    if (isValid) {
+      setCurrentStep((prev) => prev + 1);
+    }
   };
 
   return (
@@ -234,7 +330,7 @@ const Register = () => {
                             <FormItem>
                               <FormLabel>Phone Number</FormLabel>
                               <FormControl>
-                                <Input type="tel" {...field} />
+                                <Input type="tel" {...field} placeholder="+91XXXXXXXXXX" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -245,7 +341,7 @@ const Register = () => {
 
                     {currentStep === 2 && (
                       <div className="space-y-4">
-                        <h3 className="font-semibold">Select Events</h3>
+                        <h3 className="font-semibold">Select Events (Max 3)</h3>
                         {events.map((event) => (
                           <div key={event.id} className="flex items-center gap-2">
                             <input
@@ -260,6 +356,11 @@ const Register = () => {
                             </label>
                           </div>
                         ))}
+                        {form.formState.errors.selectedEvents && (
+                          <p className="text-sm text-red-500">
+                            {form.formState.errors.selectedEvents.message}
+                          </p>
+                        )}
                       </div>
                     )}
 
@@ -285,7 +386,7 @@ const Register = () => {
                                     }}
                                   />
                                   <Input 
-                                    placeholder="Grade"
+                                    placeholder="Grade (6-12)"
                                     value={participant.grade}
                                     onChange={(e) => {
                                       const newParticipants = [...participants];
@@ -308,6 +409,11 @@ const Register = () => {
                             </div>
                           );
                         })}
+                        {form.formState.errors.participants && (
+                          <p className="text-sm text-red-500">
+                            {form.formState.errors.participants.message}
+                          </p>
+                        )}
                       </div>
                     )}
                   </motion.div>
@@ -327,7 +433,7 @@ const Register = () => {
                     <Button
                       type="button"
                       className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white ml-auto"
-                      onClick={() => setCurrentStep((prev) => prev + 1)}
+                      onClick={handleNext}
                     >
                       Next
                     </Button>
