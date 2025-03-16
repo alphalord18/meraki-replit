@@ -120,7 +120,7 @@ const Register = () => {
   });
 
   const onSubmit = async (data: RegistrationData) => {
-    const isValid = await validateStep();
+    const isValid = await validateStep(true);
     if (!isValid) {
       return;
     }
@@ -236,7 +236,7 @@ const Register = () => {
     form.setValue("participants", [...participants, newParticipant]);
   };
 
-  const validateStep = async () => {
+  const validateStep = async (isSubmitting = false) => {
     switch (currentStep) {
       case 0:
         return await form.trigger(["schoolName", "schoolAddress"]);

@@ -70,6 +70,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Sponsors routes
   app.get("/api/sponsors", async (_req, res) => {
+
+
+  // Registration routes
+  app.post("/api/register", async (req, res) => {
+    try {
+      const registration = req.body;
+      // Here you can add validation if needed
+      const docRef = await storage.createRegistration(registration);
+      res.json({ id: docRef.id, message: "Registration successful" });
+    } catch (error) {
+      res.status(500).json({ message: "Registration failed", error: error.message });
+    }
+  });
+
+
     const sponsors = await storage.getSponsors();
     res.json(sponsors);
   });

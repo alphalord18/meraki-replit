@@ -70,11 +70,9 @@ const Navbar = () => {
             </NavigationMenuList>
           </NavigationMenu>
 
-          <Link href="/register">
-            <Button className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white">
-              Register Now
-            </Button>
-          </Link>
+          <Button asChild className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white">
+            <Link href="/register">Register Now</Link>
+          </Button>
         </div>
 
         {/* Mobile Navigation */}
@@ -96,14 +94,12 @@ const Navbar = () => {
               <Link href="/contact">
                 <a className="text-lg" onClick={() => setIsMenuOpen(false)}>Contact</a>
               </Link>
-              <Link href="/register">
-                <Button 
-                  className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white w-full"
+              <Button 
+                  asChild className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white w-full"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Register Now
+                  <Link href="/register">Register Now</Link>
                 </Button>
-              </Link>
             </nav>
           </div>
         )}
