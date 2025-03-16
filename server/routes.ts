@@ -1,19 +1,18 @@
-import { collection, addDoc } from "firebase/firestore";
-import { getFirestore } from "firebase/firestore";
+import { collection, addDoc, getFirestore } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
-import { type Express } from "express";
+import { Express } from "express";
 
 const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: `${process.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: `${process.env.VITE_FIREBASE_PROJECT_ID}.appspot.com`,
-  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.VITE_FIREBASE_APP_ID
+  apiKey: process.env.FIREBASE_API_KEY, // Fixed issue with VITE_ prefix
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app); // Ensure Firebase is correctly set up
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp); // Ensure Firestore is properly initialized
 
 import {
   users,
@@ -34,34 +33,28 @@ import {
 } from "@shared/schema";
 
 export interface IStorage {
-  // Users
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
 
-  // Events
   getEvents(): Promise<Event[]>;
   getEvent(id: number): Promise<Event | undefined>;
   createEvent(event: InsertEvent): Promise<Event>;
   updateEvent(id: number, event: Partial<InsertEvent>): Promise<Event>;
 
-  // Speakers
   getSpeakers(): Promise<Speaker[]>;
   getSpeaker(id: number): Promise<Speaker | undefined>;
   createSpeaker(speaker: InsertSpeaker): Promise<Speaker>;
   updateSpeaker(id: number, speaker: Partial<InsertSpeaker>): Promise<Speaker>;
 
-  // Blogs
   getBlogs(): Promise<Blog[]>;
   getBlog(id: number): Promise<Blog | undefined>;
   createBlog(blog: InsertBlog): Promise<Blog>;
 
-  // Sponsors
   getSponsors(): Promise<Sponsor[]>;
   getSponsor(id: number): Promise<Sponsor | undefined>;
   createSponsor(sponsor: InsertSponsor): Promise<Sponsor>;
 
-  // Registrations
   createRegistration(registration: any): Promise<void>;
 }
 
@@ -79,16 +72,9 @@ export class MemStorage implements IStorage {
     this.speakers = new Map();
     this.blogs = new Map();
     this.sponsors = new Map();
-    this.currentId = {
-      users: 1,
-      events: 1,
-      speakers: 1,
-      blogs: 1,
-      sponsors: 1,
-    };
+    this.currentId = { users: 1, events: 1, speakers: 1, blogs: 1, sponsors: 1 };
   }
 
-  // Users
   async getUser(id: number): Promise<User | undefined> {
     return this.users.get(id);
   }
@@ -104,7 +90,6 @@ export class MemStorage implements IStorage {
     return newUser;
   }
 
-  // Events
   async getEvents(): Promise<Event[]> {
     return Array.from(this.events.values());
   }
@@ -128,7 +113,6 @@ export class MemStorage implements IStorage {
     return updated;
   }
 
-  // Speakers
   async getSpeakers(): Promise<Speaker[]> {
     return Array.from(this.speakers.values());
   }
@@ -144,10 +128,7 @@ export class MemStorage implements IStorage {
     return newSpeaker;
   }
 
-  async updateSpeaker(
-    id: number,
-    speaker: Partial<InsertSpeaker>,
-  ): Promise<Speaker> {
+  async updateSpeaker(id: number, speaker: Partial<InsertSpeaker>): Promise<Speaker> {
     const existing = await this.getSpeaker(id);
     if (!existing) throw new Error("Speaker not found");
     const updated = { ...existing, ...speaker };
@@ -155,7 +136,6 @@ export class MemStorage implements IStorage {
     return updated;
   }
 
-  // Blogs
   async getBlogs(): Promise<Blog[]> {
     return Array.from(this.blogs.values());
   }
@@ -171,7 +151,6 @@ export class MemStorage implements IStorage {
     return newBlog;
   }
 
-  // Sponsors
   async getSponsors(): Promise<Sponsor[]> {
     return Array.from(this.sponsors.values());
   }
@@ -187,7 +166,6 @@ export class MemStorage implements IStorage {
     return newSponsor;
   }
 
-  // Registrations (Fixed)
   async createRegistration(registration: any): Promise<void> {
     try {
       const registrationsRef = collection(db, "registrations");
@@ -203,12 +181,17 @@ export class MemStorage implements IStorage {
 export const storage = new MemStorage();
 
 export const registerRoutes = (app: Express) => {
-  // Registration route
   app.post('/api/register', async (req, res) => {
     try {
       const registrationData = req.body;
+      
+      if (!registrationData.email || !registrationData.name) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
       const registrationsRef = collection(db, "registrations");
       await addDoc(registrationsRef, registrationData);
+      
       res.status(200).json({ message: "Registration successful" });
     } catch (error) {
       console.error("Error in registration:", error);
