@@ -215,34 +215,62 @@ const Register = () => {
       case 1:
         return await form.trigger(["coordinatorName", "coordinatorEmail", "coordinatorPhone"]);
       case 2:
-        return await form.trigger(["selectedEvents"]);
-      case 3:
-        // Validate participants before allowing submission
-        const allParticipantsValid = await form.trigger("participants");
-        if (!allParticipantsValid) {
+        if (selectedEvents.length === 0) {
           toast({
             variant: "destructive",
-            title: "Validation Error",
-            description: "Please fill in all participant details correctly.",
+            title: "Events Required",
+            description: "Please select at least one event.",
           });
           return false;
         }
-
-        // Check if we have exact number of participants for each event
-        const eventCounts = participants.reduce((acc, p) => {
-          acc[p.eventId] = (acc[p.eventId] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>);
-
+        return await form.trigger(["selectedEvents"]);
+      case 3:
+        // Check if all selected events have their required participants
         for (const eventId of selectedEvents) {
           const event = events.find(e => e.id === eventId);
-          if (!event || eventCounts[eventId] !== event.maxParticipants) {
+          if (!event) continue;
+
+          const eventParticipants = participants.filter(p => p.eventId === eventId);
+
+          // Check if all participants for this event have name and grade
+          const hasIncompleteParticipants = eventParticipants.some(p => !p.name || !p.grade);
+          if (hasIncompleteParticipants) {
             toast({
               variant: "destructive",
-              title: "Participants Required",
-              description: `Please add exactly ${event?.maxParticipants} participants for ${event?.name}.`,
+              title: "Incomplete Participant Details",
+              description: `Please fill in all details for ${event.name} participants.`,
             });
             return false;
+          }
+
+          // Check if we have exact number of participants
+          if (eventParticipants.length !== event.maxParticipants) {
+            toast({
+              variant: "destructive",
+              title: "Incorrect Number of Participants",
+              description: `${event.name} requires exactly ${event.maxParticipants} participants.`,
+            });
+            return false;
+          }
+
+          // Validate participant details format
+          for (const participant of eventParticipants) {
+            if (!/^[a-zA-Z\s'.]+$/.test(participant.name)) {
+              toast({
+                variant: "destructive",
+                title: "Invalid Name Format",
+                description: "Participant names can only contain letters and basic punctuation.",
+              });
+              return false;
+            }
+            if (!/^([6-9]|1[0-2])$/.test(participant.grade)) {
+              toast({
+                variant: "destructive",
+                title: "Invalid Grade",
+                description: "Grade must be between 6 and 12.",
+              });
+              return false;
+            }
           }
         }
         return true;
@@ -254,14 +282,6 @@ const Register = () => {
   const handleNext = async () => {
     const isValid = await validateStep();
     if (isValid) {
-      if (currentStep === 2 && selectedEvents.length === 0) {
-        toast({
-          variant: "destructive",
-          title: "Events Required",
-          description: "Please select at least one event.",
-        });
-        return;
-      }
       setCurrentStep((prev) => prev + 1);
     }
   };
