@@ -120,34 +120,60 @@ const Register = () => {
   });
 
   const onSubmit = async (data: RegistrationData) => {
-    const isValid = await validateStep();
-    if (!isValid) {
+    if (!validateStep()) {
       return;
+    }
+
+    // Validate all participants are added
+    for (const eventId of selectedEvents) {
+      const event = events.find(e => e.id === eventId);
+      if (!event) continue;
+      
+      const eventParticipants = participants.filter(p => p.eventId === eventId);
+      if (eventParticipants.length !== event.maxParticipants) {
+        toast({
+          variant: "destructive",
+          title: "Incomplete Participants",
+          description: `${event.name} requires exactly ${event.maxParticipants} participants.`
+        });
+        return;
+      }
     }
 
     setIsSubmitting(true);
     try {
+      const registrationId = `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
       const registrationData = {
         schoolName: data.schoolName,
         schoolAddress: data.schoolAddress,
         coordinatorName: data.coordinatorName,
         coordinatorEmail: data.coordinatorEmail,
         coordinatorPhone: data.coordinatorPhone,
-        selectedEvents: selectedEvents,
-        participants: participants,
+        events: selectedEvents.map(eventId => {
+          const event = events.find(e => e.id === eventId)!;
+          return {
+            id: eventId,
+            name: event.name,
+            participants: participants
+              .filter(p => p.eventId === eventId)
+              .map(p => ({
+                name: p.name,
+                grade: p.grade
+              }))
+          };
+        }),
         createdAt: new Date().toISOString(),
         status: "pending",
-        registrationId: `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase(),
+        registrationId
       };
 
       await addDoc(collection(db, "registrations"), registrationData);
 
       toast({
         title: "Registration successful",
-        description: `Your registration ID is ${registrationData.registrationId}. Please save this for future reference.`,
+        description: `Your registration ID is ${registrationId}. Please save this for future reference.`,
       });
 
-      // Reset form after successful submission
       form.reset();
       setSelectedEvents([]);
       setParticipants([]);
@@ -157,7 +183,7 @@ const Register = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to submit registration. Please try again.",
+        description: "Failed to submit registration. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
@@ -207,7 +233,7 @@ const Register = () => {
     form.setValue("participants", [...participants, newParticipant]);
   };
 
-  const validateStep = async () => {
+  const validateStep = () => {
     switch (currentStep) {
       case 0:
         return await form.trigger(["schoolName", "schoolAddress"]);
