@@ -120,7 +120,8 @@ const Register = () => {
   });
 
   const onSubmit = async (data: RegistrationData) => {
-    if (!validateStep()) {
+    const isValid = await validateStep();
+    if (!isValid) {
       return;
     }
 
@@ -133,7 +134,7 @@ const Register = () => {
       if (eventParticipants.length !== event.maxParticipants) {
         toast({
           variant: "destructive",
-          title: "Incomplete Participants",
+          title: "Incomplete Participants",  
           description: `${event.name} requires exactly ${event.maxParticipants} participants.`
         });
         return;
@@ -167,7 +168,9 @@ const Register = () => {
         registrationId
       };
 
-      await addDoc(collection(db, "registrations"), registrationData);
+      const registrationsRef = collection(db, "registrations");
+      const docRef = await addDoc(registrationsRef, registrationData);
+      console.log("Document written with ID: ", docRef.id);
 
       toast({
         title: "Registration successful",
