@@ -120,7 +120,6 @@ const Register = () => {
   });
 
   const onSubmit = async (data: RegistrationData) => {
-    // Validate all participants are added before submission
     const isValid = await validateStep();
     if (!isValid) {
       return;
@@ -219,15 +218,34 @@ const Register = () => {
         return await form.trigger(["selectedEvents"]);
       case 3:
         // Validate participants before allowing submission
-        const isValid = await form.trigger("participants");
-        if (!isValid) {
+        const allParticipantsValid = await form.trigger("participants");
+        if (!allParticipantsValid) {
           toast({
             variant: "destructive",
             title: "Validation Error",
-            description: "Please add all required participants for each event.",
+            description: "Please fill in all participant details correctly.",
           });
+          return false;
         }
-        return isValid;
+
+        // Check if we have exact number of participants for each event
+        const eventCounts = participants.reduce((acc, p) => {
+          acc[p.eventId] = (acc[p.eventId] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+
+        for (const eventId of selectedEvents) {
+          const event = events.find(e => e.id === eventId);
+          if (!event || eventCounts[eventId] !== event.maxParticipants) {
+            toast({
+              variant: "destructive",
+              title: "Participants Required",
+              description: `Please add exactly ${event?.maxParticipants} participants for ${event?.name}.`,
+            });
+            return false;
+          }
+        }
+        return true;
       default:
         return true;
     }
@@ -236,6 +254,14 @@ const Register = () => {
   const handleNext = async () => {
     const isValid = await validateStep();
     if (isValid) {
+      if (currentStep === 2 && selectedEvents.length === 0) {
+        toast({
+          variant: "destructive",
+          title: "Events Required",
+          description: "Please select at least one event.",
+        });
+        return;
+      }
       setCurrentStep((prev) => prev + 1);
     }
   };
