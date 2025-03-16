@@ -233,7 +233,7 @@ const Register = () => {
     form.setValue("participants", [...participants, newParticipant]);
   };
 
-  const validateStep = () => {
+  const validateStep = async () => {
     switch (currentStep) {
       case 0:
         return await form.trigger(["schoolName", "schoolAddress"]);
