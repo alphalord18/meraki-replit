@@ -1,6 +1,7 @@
 import { collection, addDoc } from "firebase/firestore";
 import { getFirestore } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
+import { type Express } from "express";
 
 const firebaseConfig = {
   apiKey: process.env.VITE_FIREBASE_API_KEY,
@@ -200,3 +201,20 @@ export class MemStorage implements IStorage {
 }
 
 export const storage = new MemStorage();
+
+export const registerRoutes = (app: Express) => {
+  // Registration route
+  app.post('/api/register', async (req, res) => {
+    try {
+      const registrationData = req.body;
+      const registrationsRef = collection(db, "registrations");
+      await addDoc(registrationsRef, registrationData);
+      res.status(200).json({ message: "Registration successful" });
+    } catch (error) {
+      console.error("Error in registration:", error);
+      res.status(500).json({ message: "Registration failed" });
+    }
+  });
+
+  return app;
+};
