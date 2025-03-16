@@ -58,8 +58,18 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Export the serverless handler
-  export const handler: Handler = serverless(app);
-
-
+  if (process.env.NETLIFY) {
+    // For Netlify serverless functions
+    module.exports = { handler: serverless(app) };
+  } else {
+    // For Replit/local development
+    const port = process.env.PORT || 5000;
+    server.listen({
+      port,
+      host: "0.0.0.0",
+      reusePort: true,
+    }, () => {
+      log(`serving on port ${port}`);
+    });
+  }
 })();
