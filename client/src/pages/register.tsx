@@ -133,8 +133,8 @@ const Register = () => {
         coordinatorName: data.coordinatorName,
         coordinatorEmail: data.coordinatorEmail,
         coordinatorPhone: data.coordinatorPhone,
-        selectedEvents: data.selectedEvents,
-        participants: data.participants,
+        selectedEvents: selectedEvents,
+        participants: participants,
         createdAt: new Date().toISOString(),
         status: "pending",
         registrationId: `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase(),
@@ -157,7 +157,7 @@ const Register = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to submit registration. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to submit registration. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
