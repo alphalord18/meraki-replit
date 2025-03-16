@@ -110,22 +110,23 @@ const handleEventSelect = (eventId: string) => {
     }
   };
 
-  const onSubmit = async (data: RegistrationData) => {
-    if (!(await validateStep())) return;
+const onSubmit = async (data: RegistrationData) => {
+  if (!(await validateStep())) return;
 
-    try {
-      const registrationId = `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
-      const docRef = await addDoc(collection(db, "registrations"), registrationData);
-      });
+  try {
+    const registrationId = `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
+    
+    const docRef = await addDoc(collection(db, "registrations"), registrationData);
+    
+    toast({ title: "Success!", description: `Your registration ID is ${registrationId}` });
+    form.reset();
+    setSelectedEvents([]);
+    setCurrentStep(0);
+  } catch (error) {
+    toast({ variant: "destructive", title: "Error", description: "Failed to register" });
+  }
+};
 
-      toast({ title: "Success!", description: `Your registration ID is ${registrationId}` });
-      form.reset();
-      setSelectedEvents([]);
-      setCurrentStep(0);
-    } catch (error) {
-      toast({ variant: "destructive", title: "Error", description: "Failed to register" });
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-100 py-20">
