@@ -78,7 +78,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const registration = req.body;
       
       // Save to Firebase
-      const docRef = await storage.createRegistration(registration);
+      const docRef = await storage.createRegistration(registrations);
       
       // Send confirmation email
       const emailData = {
