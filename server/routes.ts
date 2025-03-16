@@ -76,9 +76,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/register", async (req, res) => {
     try {
       const registration = req.body;
-      // Here you can add validation if needed
+      
+      // Save to Firebase
       const docRef = await storage.createRegistration(registration);
-      res.json({ id: docRef.id, message: "Registration successful" });
+      
+      // Send confirmation email
+      const emailData = {
+        to: registration.coordinatorEmail,
+        subject: "Registration Confirmation - MERAKI 2025",
+        html: `
+          <h1>Registration Successful!</h1>
+          <p>Dear ${registration.coordinatorName},</p>
+          <p>Your registration ID is: ${registration.registrationId}</p>
+          <p>School: ${registration.schoolName}</p>
+          <p>Events: ${registration.events.map(e => e.name).join(', ')}</p>
+        `
+      };
+
+      // Send email using service account
+      await sendEmail(emailData);
+
+      res.json({ 
+        id: docRef.id, 
+        message: "Registration successful. Check your email for confirmation." 
+      });
     } catch (error) {
       res.status(500).json({ message: "Registration failed", error: error.message });
     }

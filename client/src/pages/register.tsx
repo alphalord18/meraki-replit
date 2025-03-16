@@ -168,9 +168,19 @@ const Register = () => {
         registrationId
       };
 
-      const registrationsRef = collection(db, "registrations");
-      const docRef = await addDoc(registrationsRef, registrationData);
-      console.log("Document written with ID: ", docRef.id);
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registrationData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Registration failed');
+      }
+
+      const result = await response.json();
 
       toast({
         title: "Registration successful",
