@@ -76,7 +76,7 @@ const Hero = () => {
   return (
     <div className="relative min-h-screen flex items-center overflow-hidden">
       {/* Animated Gradient Background */}
-      <div 
+      <div
         className="absolute inset-0 bg-gradient-to-br from-[#2E4A7D] via-[#1B1B1F] to-[#000000] animate-gradient"
         style={{
           backgroundSize: '400% 400%',
@@ -92,13 +92,13 @@ const Hero = () => {
           transition={{ duration: 0.8 }}
           className="max-w-3xl"
         >
-          <motion.h1 
+          <motion.h1
             className="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#FFC857] via-yellow-500 to-[#FFC857] mb-6"
             style={{ fontFamily: "Noe Display" }}
-            animate={{ 
+            animate={{
               backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
             }}
-            transition={{ 
+            transition={{
               duration: 5,
               repeat: Infinity,
               ease: "linear"
@@ -107,7 +107,7 @@ const Hero = () => {
             MERAKI 2025
           </motion.h1>
 
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
@@ -127,13 +127,14 @@ const Hero = () => {
             transition={{ delay: 0.6 }}
             className="flex flex-wrap gap-4"
           >
-            <Button 
+            <Button
               size="lg"
               className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white"
+              onClick={() => window.location.href = '/register'}
             >
               Register Now <ArrowRight className="ml-2" />
             </Button>
-            <Button 
+            <Button
               size="lg"
               className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white"
             >
