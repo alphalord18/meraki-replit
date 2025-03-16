@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { db } from "@/lib/firebase";
+import { collection, addDoc } from "firebase/firestore"; // ✅ Import addDoc
 
 const events = [
   { id: "poetry_slam", name: "Poetry Slam Championship", maxParticipants: 2 },
@@ -22,23 +23,25 @@ const registrationSchema = z.object({
   coordinatorEmail: z.string().email("Invalid email"),
   coordinatorPhone: z.string().regex(/^\+?[0-9]{10,12}$/, "Invalid phone number"),
   selectedEvents: z.array(z.string()).min(1, "Select at least one event").max(3, "Max 3 events"),
-  participants: z.array(
-    z.object({
-      eventId: z.string(),
-      name: z.string().min(3, "Participant name is required"),
-      grade: z.string().regex(/^([6-9]|1[0-2])$/, "Grade must be between 6 and 12"),
-    })
-  ).refine(participants => {
-    const countByEvent = participants.reduce((acc, p) => {
-      acc[p.eventId] = (acc[p.eventId] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    
-    return Object.keys(countByEvent).every(eventId => {
-      const event = events.find(e => e.id === eventId);
-      return event ? countByEvent[eventId] === event.maxParticipants : false;
-    });
-  }, "Each event must have the required number of participants"),
+  participants: z
+    .array(
+      z.object({
+        eventId: z.string(),
+        name: z.string().min(3, "Participant name is required"),
+        grade: z.string().regex(/^([6-9]|1[0-2])$/, "Grade must be between 6 and 12"),
+      })
+    )
+    .refine((participants) => {
+      const countByEvent = participants.reduce((acc, p) => {
+        acc[p.eventId] = (acc[p.eventId] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      return Object.keys(countByEvent).every((eventId) => {
+        const event = events.find((e) => e.id === eventId);
+        return event ? countByEvent[eventId] === event.maxParticipants : false;
+      });
+    }, "Each event must have the required number of participants"),
 });
 
 type RegistrationData = z.infer<typeof registrationSchema>;
@@ -73,31 +76,30 @@ const Register = () => {
     name: "participants",
   });
 
-const handleEventSelect = (eventId: string) => {
-  const newEvents = selectedEvents.includes(eventId)
-    ? selectedEvents.filter(id => id !== eventId)
-    : [...selectedEvents, eventId];
+  const handleEventSelect = (eventId: string) => {
+    const newEvents = selectedEvents.includes(eventId)
+      ? selectedEvents.filter((id) => id !== eventId)
+      : [...selectedEvents, eventId];
 
-  setSelectedEvents(newEvents);
-  form.setValue("selectedEvents", newEvents);
+    setSelectedEvents(newEvents);
+    form.setValue("selectedEvents", newEvents);
 
-  // 🔥 Immediately remove participants for unselected events
-  setParticipants(prev => prev.filter(p => newEvents.includes(p.eventId)));
-};
+    // ✅ Correctly update participants
+    form.setValue(
+      "participants",
+      form.getValues("participants").filter((p) => newEvents.includes(p.eventId))
+    );
 
-    // Adjust participant fields based on selected events
-    let updatedParticipants = fields.filter(p => updatedEvents.includes(p.eventId));
+    // ✅ Ensure correct number of participants for each event
+    newEvents.forEach((eventId) => {
+      const event = events.find((e) => e.id === eventId)!;
+      const currentParticipants = form.getValues("participants").filter((p) => p.eventId === eventId);
 
-    updatedEvents.forEach(eventId => {
-      const event = events.find(e => e.id === eventId)!;
-      const existingCount = updatedParticipants.filter(p => p.eventId === eventId).length;
-
-      while (existingCount < event.maxParticipants) {
-        updatedParticipants.push({ id: `${eventId}-${existingCount}`, eventId, name: "", grade: "" });
+      while (currentParticipants.length < event.maxParticipants) {
+        append({ eventId, name: "", grade: "" });
+        currentParticipants.push({ eventId, name: "", grade: "" });
       }
     });
-
-    form.setValue("participants", updatedParticipants);
   };
 
   const validateStep = async () => {
@@ -110,23 +112,23 @@ const handleEventSelect = (eventId: string) => {
     }
   };
 
-const onSubmit = async (data: RegistrationData) => {
-  if (!(await validateStep())) return;
+  const onSubmit = async (data: RegistrationData) => {
+    if (!(await validateStep())) return;
 
-  try {
-    const registrationId = `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
-    
-    const docRef = await addDoc(collection(db, "registrations"), registrationData);
-    
-    toast({ title: "Success!", description: `Your registration ID is ${registrationId}` });
-    form.reset();
-    setSelectedEvents([]);
-    setCurrentStep(0);
-  } catch (error) {
-    toast({ variant: "destructive", title: "Error", description: "Failed to register" });
-  }
-};
+    try {
+      const registrationId = `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
 
+      // ✅ Use `data` instead of `registrationData`
+      const docRef = await addDoc(collection(db, "registrations"), data);
+
+      toast({ title: "Success!", description: `Your registration ID is ${registrationId}` });
+      form.reset();
+      setSelectedEvents([]);
+      setCurrentStep(0);
+    } catch (error) {
+      toast({ variant: "destructive", title: "Error", description: "Failed to register" });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 py-20">
@@ -155,7 +157,7 @@ const onSubmit = async (data: RegistrationData) => {
                 {currentStep === 2 && (
                   <>
                     <h3 className="font-semibold">Select Events (Max 3)</h3>
-                    {events.map(event => (
+                    {events.map((event) => (
                       <label key={event.id} className="flex items-center gap-2">
                         <input type="checkbox" checked={selectedEvents.includes(event.id)} onChange={() => handleEventSelect(event.id)} />
                         {event.name} (Max {event.maxParticipants})
@@ -187,5 +189,6 @@ const onSubmit = async (data: RegistrationData) => {
       </div>
     </div>
   );
+};
 
 export default Register;
