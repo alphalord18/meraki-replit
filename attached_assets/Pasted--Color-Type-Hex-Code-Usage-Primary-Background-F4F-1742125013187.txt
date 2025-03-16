@@ -1,0 +1,248 @@
+| **Color Type** | **Hex Code** | **Usage** |
+| --- | --- | --- |
+| **Primary Background** | `#F4F4F4` | Soft white-gray for a clean, premium feel |
+| **Secondary Background** | `#E8EAF6` | Light lavender-blue for section contrast |
+| **Dark Accent** | `#1B1B1F` | Deep black-gray (Navigation, Footer, Key Elements) |
+| **Primary Accent** | `#2E4A7D` | Royal blue (Buttons, Highlights, CTAs) |
+| **Gold Accent** | `#FFC857` | Luxurious gold (Important CTA highlights) |
+| **Text Color** | `#222222` | Dark gray (High readability for text) |
+
+---
+
+## Typography
+
+Headings - Noe Display Bold
+
+Event Titles - Editorial New Bold
+
+Navigation and Small Labels - Monument Extended Medium
+
+Body Text - Neue Montreal Medium
+
+CTA Buttons - PP Neue Machina Semi Bold
+
+# **📌 Homepage – The Grand First Impression**
+
+The homepage should create an **instant emotional connection** while showcasing the **grandeur of Meraki 2025**. The goal is to **inspire, engage, and drive action**.
+
+## **🎬 Hero Section (First Fold) – Immersive & Grand**
+
+✅ **Background Options (User-Selectable)**
+
+- Animated **gradient mesh** (Soft, vibrant blend of event colors).
+- Muted **cinematic video montage** of past events (Ultra-HD, looped).
+- **Interactive 3D Elements** – Floating **Meraki 2025** title with motion parallax.
+
+✅ **Text & Call-to-Actions**
+
+- **Big, bold title:** `MERAKI 2025` (Luxury gold gradient with animated light reflection).
+- **Subtext:** `"Where Creativity Meets Expression"` (Elegant fade-in animation).
+- **Animated Auto-Scrolling Subtitle:** `"Debates | Poetry | Storytelling | Literary Genius"` (Loops continuously).
+- **🚀 CTA Buttons:**
+    - `🎟 Register Now` (Luxury gold, hover effect shifts to a deep royal blue).
+    - `🔍 View Events` (Outlined, hover fills with premium blue gradient).
+
+✅ **📅 Countdown Timer** (Real-time auto-updating with smooth number flip animation).
+
+✅ **🔥 Floating 3D Sponsor Logos Carousel** (Auto-scroll effect).
+
+---
+
+## **📜 Event Highlights Section – Interactive & Engaging**
+
+✅ **Animated Interactive Cards**
+
+- When hovered, they expand slightly, revealing an **exciting tagline**.
+- Subtle **3D tilt effect** (Smooth hover interaction).
+
+✅ **🎬 Embedded Video Showcase**
+
+- Auto-play highlight **reel of past winners & performances**.
+- **Cinematic background blur** when hovering over video.
+
+✅ **🔁 Scroll-Based Appear Animations**
+
+- Sections smoothly fade in as the user scrolls.
+- Subtle **zoom-in effect** for event highlights.
+
+---
+
+## **📍 Why Join Meraki? – Engaging & Immersive**
+
+✅ **"Join a Community of Literary Geniuses!" (Animated Typing Effect)**
+
+✅ **Interactive 3D Icons** (React to user hover)
+
+- 🎤 **Debate Club** (Mic tilts when hovered).
+- 📝 **Poetry Slams** (Floating feather pen writes in real-time).
+- 📚 **Storytelling Contests** (Pages of a book turn dynamically).
+- 🎭 **Live Performances** (Theater mask spins).
+
+✅ **Parallax Background with Floating Elements**
+
+- Subtle movement when scrolling (Creates depth).
+
+---
+
+## **📅 Key Dates & Timeline – Futuristic Interactive UX**
+
+✅ **🗂 Horizontal Interactive Timeline**
+
+- Hovering over **each milestone expands a card** with event details.
+- **Past events fade out, upcoming events glow in gold.**
+- **3D floating date cards** (Give an ultra-modern feel).
+
+✅ **🔔 "Add to Google Calendar" Button** (One-click event reminder setup).
+
+---
+
+## **🤩 Judges & Speakers – Luxurious & Engaging**
+
+✅ **🔥 Clickable Speaker Profiles**
+
+- **Expands into a modal** with full bio & event involvement.
+- **LinkedIn, Twitter, & Personal Website Links** for networking.
+
+✅ **📸 Auto-Slideshow of Past Judges & Guest Speakers**
+
+- AI-powered **face recognition** for **auto-cropping & optimization**.
+
+✅ **🎬 Video Messages from VIP Speakers**
+
+- Auto-play **welcome messages** from key guests.
+
+---
+
+## **📰 Blog & Literary Submissions – Premium Content Hub**
+
+✅ **Dynamic Blog Feed** (Connected to CMS, auto-updates).
+
+✅ **🖼 Feature Best Poems, Essays, & Stories from Participants**
+
+✅ **AI-Powered Article Summarizer** – Highlights key takeaways dynamically.
+
+---
+
+## **🎮 Gamified Quiz Section – Fun & Interactive**
+
+✅ **📜 "Test Your Literary Knowledge!"**
+
+✅ **🕹 Interactive Quiz with Animated Responses**
+
+✅ **🏆 Live Scores Appear on a Public Leaderboard**
+
+---
+
+## **📖 Download Meraki Magazine – Exclusive Content**
+
+✅ **📩 Digital Magazine PDF** – Featuring the **best stories, interviews, and more.**
+
+✅ **Flipbook UI** – Makes it feel like **turning real pages.**
+
+---
+
+## **📬 Stay Updated – Elegant Newsletter Signup**
+
+✅ **Smooth Floating Input Field Animations.**
+
+✅ **Live Subscription Counter.**
+
+---
+
+# **📌 Events Page – Fully Interactive & Structured**
+
+## **🗂 Event Categories Section**
+
+✅ **🔍 Filterable Categories (Poetry, Debate, Short Stories, etc.)**
+
+✅ **🖼 Grid Layout with Hover Effects** (Cards **subtly expand** when hovered).
+
+---
+
+## **🎭 Event Details Section**
+
+✅ **📌 Click-to-Expand Event Details.**
+
+✅ **🔔 "Add to Google Calendar" Button.**
+
+✅ **🎤 Judges' Profiles Auto-Updated from CMS.**
+
+---
+
+# **📌 Registration Page – Ultra-Smooth UX**
+
+✅ **📋 Step-by-Step Registration Form (Multi-Step Flow for Better UX).**
+
+✅ **🧑‍💻 AI-Powered Q&A Chatbot** – Answers participant queries instantly.
+
+✅ **📩 Instant Email Confirmation with Digital Ticket & Event Details.**
+
+---
+
+# **📌 Speakers & Judges Page – Premium & Engaging**
+
+✅ **🎭 Clickable Grid Layout** – Expands into full bio when clicked.
+
+✅ **🌟 Social Links for Networking.**
+
+---
+
+# **📌 Sponsors & Partners Page – Exclusive Branding**
+
+✅ **✨ Sponsorship Tiers (Gold, Silver, Bronze).**
+
+✅ **📨 Sponsorship Inquiry Form (Direct Contact for Sponsors).**
+
+---
+
+# **📌 Contact Page – Easy Communication**
+
+✅ **📍 Google Maps Embed (Live Location of Venue).**
+
+✅ **📬 Quick Contact Form.**
+
+✅ **🙋 Volunteer Signup Form.**
+
+---
+
+# **🔹 Advanced UI & Performance Enhancements**
+
+✅ **Ultra-Smooth Page Transitions** (Fade-in, slide-up effects).
+
+✅ **Hover & Click Effects** (Subtle **scale & glow** effects).
+
+✅ **Parallax Scrolling for Enhanced Depth.**
+
+✅ **AI-Powered Content Optimization for Performance.**
+
+---
+
+# **✨ Extra Enhancements**
+
+✅ **Animated Hover Effects on Buttons & Links.**
+
+✅ **Luxury Gradient & Neon Glow on Headings.**
+
+✅ **Auto-Scrolling Hero Text for a Premium Feel.**
+
+✅ **3D Interactive Elements Using Spline & Framer.**
+
+---
+
+# **🔹 3D UI Enhancements for Premium Experience**
+
+✅ **Hero Section:** Floating **3D "MERAKI 2025"** Title with slight motion.
+
+✅ **Event Cards:** **3D tilt animations** when hovered.
+
+✅ **Why Join Meraki?** Floating **3D rotating icons.**
+
+✅ **Timeline:** **3D scroll animation effect** (floating event cards).
+
+✅ **Gamified Quiz:** Interactive **3D buttons & transitions.**
+
+---
+
+This is the **best possible** Meraki 2025 website, optimized for **maximum engagement, performance, and a luxurious high-end experience.** 🚀✨ Let me know if you need further refinements!
+
+when writing or reading the firestore database, u use [firebase-adminsdk-fbsvc@merakifest-d9822.iam.gserviceaccount.com](mailto:firebase-adminsdk-fbsvc@merakifest-d9822.iam.gserviceaccount.com) as the client email id. on the sponsors page, give an option of 3-4 packages and an option to contact for sponsorship. all the pages like events, blogs, speakers, sponsors are empty, fill them with some temporary things. A few more changes that I wanted are - 1. On the home page, at the hero section, add a background of people debating. 2. At Events, remove the register now button and make the event block a clickable block that shows all the details including rules, etc. of the event, It should have a proper animation that it increases, comes to the center and background is blured, when clicked on any side, it goes back to the normal registration page. 3. Do same with speakers page, when clicked, increase details for the speakers. 4. Make the blog button also clickable and redirect to a new page for that blog where full blog is seen. 5. In sponsors, add past sponsors also which goes from right to left continously in a loop forever with just the logo. The contact us button on the packages should be in one line on the bottom of that box. 6. Make the login page where coordinator email and the password generated by u can be used to login and details which were filled can be edited.

@@ -1,0 +1,195 @@
+# **📌 MERAKI 2025 Website – Complete Technical Plan**
+
+## **💡 Overview**
+
+This document expands the design plan by adding full **technical details** for both frontend and backend development, ensuring a seamless **fully functional** execution.
+
+---
+
+# **🛠️ Technology Stack & Architecture**
+
+## **Frontend (Client-Side) – Interactive & High-Perfomance**
+
+✅ **Framework:** Next.js (React-based, optimized for SEO & performance)
+
+✅ **Styling:** Tailwind CSS + Framer Motion (For animations & transitions)
+
+✅ **3D Elements:** Spline / Three.js (For interactive 3D UI)
+
+✅ **State Management:** Zustand / Redux (For handling state across components)
+
+✅ **UI Components:** ShadCN (For pre-built high-quality UI components)
+
+✅ **Forms & Validation:** React Hook Form + Zod (For structured validation)
+
+✅ **API Requests:** Fetch / Axios (For calling backend endpoints)
+
+✅ **Authentication:** Firebase Auth / Clerk (For user login and role-based access)
+
+✅ **AI Integration:** OpenAI API (For Q&A chatbot & AI-generated summaries)
+
+✅ **CMS (For Blog & Submissions):** Sanity.io (Headless CMS for easy content management)
+
+---
+
+## **Backend (Server-Side) – Secure & Scalable**
+
+✅ **Framework:** Next.js App Router (Server Actions for secure API handling)
+
+✅ **Database:** Firebase Firestore (Cloud-based NoSQL database)
+
+✅ **Authentication:** Firebase Auth (For user & admin roles)
+
+✅ **Server Functions:** Firebase Functions / Vercel Serverless (For form submissions & email automation)
+
+✅ **Email Services:** Nodemailer (For registration confirmations & notifications)
+
+✅ **Payment Integration (If Needed):** Stripe (For sponsorship payments or ticketing)
+
+✅ **Hosting:** Vercel (For frontend) + Firebase (For backend & database)
+
+---
+
+# **📌 Routing & API Handling**
+
+## **📌 Frontend Routing (Client-Side Navigation)**
+
+✅ Uses **Next.js App Router** (`app/` directory) for optimized routing.
+
+✅ **Pre-rendering** (Static & SSR) ensures high performance.
+
+✅ **Client-Side Navigation** for a seamless experience without full-page reloads.
+
+📌 **Main Routes & Pages:**
+
+```
+/app
+  ├── layout.tsx  (Global layout & theme)
+  ├── page.tsx  (Homepage)
+  ├── events/
+  │    ├── page.tsx  (Events Listing)
+  │    ├── [eventId]/page.tsx  (Dynamic Event Details)
+  ├── registration/
+  │    ├── page.tsx  (Step-by-Step Registration)
+  ├── blog/
+  │    ├── page.tsx  (Blog Listing)
+  │    ├── [slug]/page.tsx  (Blog Post Details)
+  ├── speakers/
+  │    ├── page.tsx  (Judges & Speakers)
+  ├── sponsors/
+  │    ├── page.tsx  (Sponsorship Details)
+  ├── contact/
+  │    ├── page.tsx  (Contact Form & Google Maps)
+
+```
+
+---
+
+## **📌 Backend API Routing (Server Actions in Next.js)**
+
+✅ **All sensitive operations (form submissions, email sending, authentication) use Server Actions** (Ensuring security & preventing frontend data tampering).
+
+✅ **API routes (`app/api/`) handle backend logic securely.**
+
+📌 **Main API Endpoints:**
+
+```
+/app/api
+  ├── register/route.ts  (Handles registration form submission → Saves to Firebase)
+  ├── contact/route.ts  (Processes contact form queries & emails admins)
+  ├── newsletter/route.ts  (Handles newsletter subscriptions & updates CMS)
+  ├── quiz-leaderboard/route.ts  (Stores & retrieves quiz scores)
+
+```
+
+✅ **All forms submit data to backend routes instead of direct Firestore access in frontend.**
+
+✅ **Prevents CORS & security vulnerabilities.**
+
+---
+
+# **📌 API Keys & Security Handling**
+
+## **📜 Where API Keys Will Be Stored?**
+
+✅ **Environment Variables (`.env.local`)** – Not exposed in frontend.
+
+✅ **Example `.env.local` file:**
+
+```
+FIREBASE_API_KEY=your_firebase_api_key
+FIREBASE_AUTH_DOMAIN=your_auth_domain
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_STORAGE_BUCKET=your_storage_bucket
+FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+FIREBASE_APP_ID=your_app_id
+FIREBASE_MEASUREMENT_ID=your_measurement_id
+OPENAI_API_KEY=your_openai_api_key
+EMAIL_SERVICE_API_KEY=your_email_service_key
+
+```
+
+✅ **These keys will NEVER be hardcoded in frontend code.**
+
+✅ **Server-side `.env` values will be used in `server.ts` for API calls.**
+
+---
+
+# **📌 Database Structure (Firestore – NoSQL)**
+
+✅ **Structure Optimized for Fast Queries & Secure Access.**
+
+📌 **Firestore Collections:**
+
+```
+/firestore
+  ├── users/
+  │    ├── {userId}/ (Stores user details & roles)
+  ├── registrations/
+  │    ├── {schoolId}/ (Stores event registrations per school)
+  ├── events/
+  │    ├── {eventId}/ (Stores event details, rules, schedule)
+  ├── speakers/
+  │    ├── {speakerId}/ (Judges & Speaker Profiles)
+  ├── sponsors/
+  │    ├── {sponsorId}/ (Sponsorship details & tiers)
+  ├── leaderboard/
+  │    ├── {userId}/ (Quiz scores & rankings)
+  ├── blog/
+  │    ├── {postId}/ (Blog articles & literary submissions)
+
+```
+
+✅ **All API requests use Firebase Security Rules for access control.**
+
+✅ **Data is optimized for fast reads (No unnecessary nested documents).**
+
+---
+
+# **📌 Deployment Strategy**
+
+✅ **Frontend:** Vercel (Optimized for Next.js)
+
+✅ **Backend:** Firebase Functions (Serverless, auto-scaling)
+
+✅ **Database:** Firebase Firestore (Real-time updates, NoSQL)
+
+✅ **Media Storage:** Firebase Storage (For images, PDFs, & assets)
+
+✅ **CI/CD:** GitHub Actions (Auto-deployment on push)
+
+---
+
+# **📌 Final Notes & Next Steps**
+
+✅ This plan ensures **Meraki 2025 is fully functional, fast, and scalable.**
+
+✅ **All key backend operations are handled securely with server-side logic.**
+
+✅ **Frontend is optimized for animations, interactivity, & high performance.**
+
+✅ **API keys & sensitive data are never exposed in frontend code.**
+
+✅ **Automated email confirmations & AI chatbots enhance user experience.**
+
+🚀 **Next Step:** Start Development by Implementing the Next.js Boilerplate! 🎯
