@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button"; // Added missing import
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Calendar, Clock, MapPin } from "lucide-react";
 

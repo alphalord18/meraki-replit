@@ -1,12 +1,32 @@
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
+
+// Temporary events data
+const tempEvents = [
+  {
+    id: 1,
+    title: "Poetry Slam Championship",
+    description: "Express your emotions through verses in this competitive poetry event",
+    date: "2025-08-23",
+    category: "Poetry"
+  },
+  {
+    id: 2,
+    title: "Literary Debate Competition",
+    description: "Engage in intellectual discourse on contemporary literary topics",
+    date: "2025-08-24",
+    category: "Debate"
+  },
+  {
+    id: 3,
+    title: "Creative Writing Workshop",
+    description: "Learn the art of storytelling from experienced authors",
+    date: "2025-08-25",
+    category: "Workshop"
+  }
+];
 
 const EventHighlights = () => {
-  const { data: events } = useQuery({
-    queryKey: ["/api/events"],
-  });
-
   return (
     <section className="py-20 bg-[#E8EAF6]">
       <div className="container mx-auto px-4">
@@ -16,7 +36,7 @@ const EventHighlights = () => {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {events?.slice(0, 3).map((event) => (
+          {tempEvents.map((event) => (
             <motion.div
               key={event.id}
               whileHover={{ scale: 1.05 }}
