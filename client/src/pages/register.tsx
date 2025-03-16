@@ -127,15 +127,14 @@ const Register = () => {
 
     setIsSubmitting(true);
     try {
-      const eventParticipants = selectedEvents.reduce((acc, eventId) => {
-        const eventParticipants = participants.filter(p => p.eventId === eventId);
-        acc[eventId] = eventParticipants;
-        return acc;
-      }, {} as Record<string, typeof participants>);
-
       const registrationData = {
-        ...data,
-        eventParticipants,
+        schoolName: data.schoolName,
+        schoolAddress: data.schoolAddress,
+        coordinatorName: data.coordinatorName,
+        coordinatorEmail: data.coordinatorEmail,
+        coordinatorPhone: data.coordinatorPhone,
+        selectedEvents: data.selectedEvents,
+        participants: data.participants,
         createdAt: new Date().toISOString(),
         status: "pending",
         registrationId: `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase(),
