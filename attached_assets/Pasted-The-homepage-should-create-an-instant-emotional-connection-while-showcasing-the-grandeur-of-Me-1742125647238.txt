@@ -1,0 +1,123 @@
+The homepage should create an **instant emotional connection** while showcasing the **grandeur of Meraki 2025**. The goal is to **inspire, engage, and drive action**.
+
+## **🎬 Hero Section (First Fold) – Immersive & Grand**
+
+✅ **Background Options (User-Selectable)**
+
+- Animated **gradient mesh** (Soft, vibrant blend of event colors).
+- Muted **cinematic video montage** of past events (Ultra-HD, looped).
+- **Interactive 3D Elements** – Floating **Meraki 2025** title with motion parallax.
+
+✅ **Text & Call-to-Actions**
+
+- **Big, bold title:** `MERAKI 2025` (Luxury gold gradient with animated light reflection).
+- **Subtext:** `"Where Creativity Meets Expression"` (Elegant fade-in animation).
+- **Animated Auto-Scrolling Subtitle:** `"Debates | Poetry | Storytelling | Literary Genius"` (Loops continuously).
+- **🚀 CTA Buttons:**
+    - `🎟 Register Now` (Luxury gold, hover effect shifts to a deep royal blue).
+    - `🔍 View Events` (Outlined, hover fills with premium blue gradient).
+
+✅ **📅 Countdown Timer** (Real-time auto-updating with smooth number flip animation).
+
+✅ **🔥 Floating 3D Sponsor Logos Carousel** (Auto-scroll effect).
+
+---
+
+## **📜 Event Highlights Section – Interactive & Engaging**
+
+✅ **Animated Interactive Cards**
+
+- When hovered, they expand slightly, revealing an **exciting tagline**.
+- Subtle **3D tilt effect** (Smooth hover interaction).
+
+✅ **🎬 Embedded Video Showcase**
+
+- Auto-play highlight **reel of past winners & performances**.
+- **Cinematic background blur** when hovering over video.
+
+✅ **🔁 Scroll-Based Appear Animations**
+
+- Sections smoothly fade in as the user scrolls.
+- Subtle **zoom-in effect** for event highlights.
+
+---
+
+## **📍 Why Join Meraki? – Engaging & Immersive**
+
+✅ **"Join a Community of Literary Geniuses!" (Animated Typing Effect)**
+
+✅ **Interactive 3D Icons** (React to user hover)
+
+- 🎤 **Debate Club** (Mic tilts when hovered).
+- 📝 **Poetry Slams** (Floating feather pen writes in real-time).
+- 📚 **Storytelling Contests** (Pages of a book turn dynamically).
+- 🎭 **Live Performances** (Theater mask spins).
+
+✅ **Parallax Background with Floating Elements**
+
+- Subtle movement when scrolling (Creates depth).
+
+---
+
+## **📅 Key Dates & Timeline – Futuristic Interactive UX**
+
+✅ **🗂 Horizontal Interactive Timeline**
+
+- Hovering over **each milestone expands a card** with event details.
+- **Past events fade out, upcoming events glow in gold.**
+- **3D floating date cards** (Give an ultra-modern feel).
+
+✅ **🔔 "Add to Google Calendar" Button** (One-click event reminder setup).
+
+---
+
+## **🤩 Judges & Speakers – Luxurious & Engaging**
+
+✅ **🔥 Clickable Speaker Profiles**
+
+- **Expands into a modal** with full bio & event involvement.
+- **LinkedIn, Twitter, & Personal Website Links** for networking.
+
+✅ **📸 Auto-Slideshow of Past Judges & Guest Speakers**
+
+- AI-powered **face recognition** for **auto-cropping & optimization**.
+
+✅ **🎬 Video Messages from VIP Speakers**
+
+- Auto-play **welcome messages** from key guests.
+
+---
+
+## **📰 Blog & Literary Submissions – Premium Content Hub**
+
+✅ **Dynamic Blog Feed** (Connected to CMS, auto-updates).
+
+✅ **🖼 Feature Best Poems, Essays, & Stories from Participants**
+
+✅ **AI-Powered Article Summarizer** – Highlights key takeaways dynamically.
+
+---
+
+## **🎮 Gamified Quiz Section – Fun & Interactive**
+
+✅ **📜 "Test Your Literary Knowledge!"**
+
+✅ **🕹 Interactive Quiz with Animated Responses**
+
+✅ **🏆 Live Scores Appear on a Public Leaderboard**
+
+---
+
+## **📖 Download Meraki Magazine – Exclusive Content**
+
+✅ **📩 Digital Magazine PDF** – Featuring the **best stories, interviews, and more.**
+
+✅ **Flipbook UI** – Makes it feel like **turning real pages.**
+
+---
+
+## **📬 Stay Updated – Elegant Newsletter Signup**
+
+✅ **Smooth Floating Input Field Animations.**
+
+✅ **Live Subscription Counter.**
