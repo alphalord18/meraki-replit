@@ -187,6 +187,5 @@ const onSubmit = async (data: RegistrationData) => {
       </div>
     </div>
   );
-};
 
 export default Register;
