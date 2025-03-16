@@ -4,24 +4,6 @@ import { storage } from "./storage";
 import { insertUserSchema, insertEventSchema, insertSpeakerSchema, insertBlogSchema, insertSponsorSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Users/Auth routes
-  app.post("/api/auth/login", async (req, res) => {
-    const { email, password } = req.body;
-    const user = await storage.getUserByEmail(email);
-    
-    if (!user || user.password !== password) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-    
-    req.session.userId = user.id;
-    res.json({ user });
-  });
-
-  app.post("/api/auth/logout", (req, res) => {
-    req.session.destroy(() => {
-      res.json({ message: "Logged out successfully" });
-    });
-  });
 
   // Events routes
   app.get("/api/events", async (_req, res) => {
