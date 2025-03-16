@@ -6,6 +6,7 @@ import serverless from 'serverless-http';
 
 const app = express();
 app.use(express.json());
+registerRoutes(app);
 app.use(express.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {
