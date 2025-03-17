@@ -191,21 +191,23 @@ const Register = () => {
     }
   };
 
-  // Validate all participants are added
-  for (const eventId of selectedEvents) {
-    const event = events.find((e) => e.id === eventId);
-    if (!event) continue;
+  const validateParticipants = () => {
+    for (const eventId of selectedEvents) {
+      const event = events.find((e) => e.id === eventId);
+      if (!event) continue;
 
-    const eventParticipants = participants.filter((p) => p.eventId === eventId);
-    if (eventParticipants.length !== event.maxParticipants) {
-      toast({
-        variant: "destructive",
-        title: "Incomplete Participants",
-        description: `${event.name} requires exactly ${event.maxParticipants} participants.`,
-      });
-      return;
+      const eventParticipants = participants.filter((p) => p.eventId === eventId);
+      if (eventParticipants.length !== event.maxParticipants) {
+        toast({
+          variant: "destructive",
+          title: "Incomplete Participants",
+          description: `${event.name} requires exactly ${event.maxParticipants} participants.`,
+        });
+        return false;
+      }
     }
-  }
+    return true;
+  };
 
   const handleEventSelect = (eventId: string) => {
     if (selectedEvents.length >= 3 && !selectedEvents.includes(eventId)) {
