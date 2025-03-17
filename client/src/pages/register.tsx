@@ -159,7 +159,7 @@ const Register = () => {
   const onSubmit = async (data: RegistrationData) => {
     const isValid = await validateStep(true);
     if (!isValid) return;
-
+    
     setIsSubmitting(true);
     try {
       const registrationData = {
@@ -179,7 +179,7 @@ const Register = () => {
         title: "Registration Successful!",
         description: `Your registration ID is ${registrationData.registrationId}`,
       });
-
+      
       form.reset();
       setSelectedEvents([]);
       setParticipants([]);
@@ -257,7 +257,7 @@ const Register = () => {
     form.setValue("participants", [...participants, newParticipant]);
   };
 
-  const validateStep = async (isSubmit = false) => {
+  const validateStep = async (isSubmitting = false) => {
     switch (currentStep) {
       case 0:
         return await form.trigger(["schoolName", "schoolAddress"]);
@@ -278,60 +278,57 @@ const Register = () => {
         }
         return await form.trigger(["selectedEvents"]);
       case 3:
-        // Check if both participants have valid information
-        if (!participants[0]?.name || !participants[0]?.grade) {
-          toast({
-            variant: "destructive",
-            title: "Incomplete Participant Details",
-            description: "Please fill in all details for Participant 1.",
-          });
-          return false;
-        }
+        // Check if all selected events have their required participants
+        for (const eventId of selectedEvents) {
+          const event = events.find((e) => e.id === eventId);
+          if (!event) continue;
 
-        // Validate participant 1
-        if (!/^[a-zA-Z\s'.]+$/.test(participants[0].name)) {
-          toast({
-            variant: "destructive",
-            title: "Invalid Name Format",
-            description: "Participant names can only contain letters and basic punctuation.",
-          });
-          return false;
-        }
-        if (!/^([6-9]|1[0-2])$/.test(participants[0].grade)) {
-          toast({
-            variant: "destructive",
-            title: "Invalid Grade",
-            description: "Grade must be between 6 and 12.",
-          });
-          return false;
-        }
+          const eventParticipants = participants.filter(
+            (p) => p.eventId === eventId,
+          );
 
-        // For participant 2, only validate if details are provided
-        if (participants[1]?.name || participants[1]?.grade) {
-          if (!participants[1]?.name || !participants[1]?.grade) {
+          // Check if all participants for this event have name and grade
+          const hasIncompleteParticipants = eventParticipants.some(
+            (p) => !p.name || !p.grade,
+          );
+          if (hasIncompleteParticipants) {
             toast({
               variant: "destructive",
               title: "Incomplete Participant Details",
-              description: "Please fill in all details for Participant 2.",
+              description: `Please fill in all details for ${event.name} participants.`,
             });
             return false;
           }
 
-          if (!/^[a-zA-Z\s'.]+$/.test(participants[1].name)) {
+          // Check if we have exact number of participants
+          if (eventParticipants.length !== event.maxParticipants) {
             toast({
               variant: "destructive",
-              title: "Invalid Name Format",
-              description: "Participant names can only contain letters and basic punctuation.",
+              title: "Incorrect Number of Participants",
+              description: `${event.name} requires exactly ${event.maxParticipants} participants.`,
             });
             return false;
           }
-          if (!/^([6-9]|1[0-2])$/.test(participants[1].grade)) {
-            toast({
-              variant: "destructive",
-              title: "Invalid Grade",
-              description: "Grade must be between 6 and 12.",
-            });
-            return false;
+
+          // Validate participant details format
+          for (const participant of eventParticipants) {
+            if (!/^[a-zA-Z\s'.]+$/.test(participant.name)) {
+              toast({
+                variant: "destructive",
+                title: "Invalid Name Format",
+                description:
+                  "Participant names can only contain letters and basic punctuation.",
+              });
+              return false;
+            }
+            if (!/^([6-9]|1[0-2])$/.test(participant.grade)) {
+              toast({
+                variant: "destructive",
+                title: "Invalid Grade",
+                description: "Grade must be between 6 and 12.",
+              });
+              return false;
+            }
           }
         }
         return true;
@@ -528,7 +525,7 @@ const Register = () => {
                             />
                           </div>
                         </div>
-
+                        
                         <div className="space-y-4">
                           <h3 className="font-semibold">Participant 2</h3>
                           <div className="grid grid-cols-2 gap-4">
