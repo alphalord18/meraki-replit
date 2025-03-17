@@ -1,12 +1,10 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { Handler } from '@netlify/functions';
 import serverless from 'serverless-http';
 
 const app = express();
 app.use(express.json());
-registerRoutes(app);
 app.use(express.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {

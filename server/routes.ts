@@ -55,7 +55,6 @@ export interface IStorage {
   getSponsor(id: number): Promise<Sponsor | undefined>;
   createSponsor(sponsor: InsertSponsor): Promise<Sponsor>;
 
-  createRegistration(registration: any): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -179,32 +178,3 @@ export class MemStorage implements IStorage {
 }
 
 export const storage = new MemStorage();
-
-export const registerRoutes = (app: Express) => {
-  // Enable CORS (Optional - If frontend is hosted separately)
-  app.use(cors());
-  app.use(express.json()); // Middleware to parse JSON request body
-
-  // Registration route
-  app.post('/api/register', async (req: Request, res: Response) => {
-    try {
-      console.log("Received registration request:", req.body); // Debug log
-
-      const registrationData = req.body;
-      if (!registrationData || Object.keys(registrationData).length === 0) {
-        return res.status(400).json({ message: "Invalid registration data" });
-      }
-
-      const registrationsRef = collection(db, "registrations");
-      await addDoc(registrationsRef, registrationData);
-
-      console.log("Registration added successfully!");
-      res.status(200).json({ message: "Registration successful" });
-    } catch (error) {
-      console.error("Error in registration:", error);
-      res.status(500).json({ message: "Registration failed", error: error.message });
-    }
-  });
-
-  return app;
-};
