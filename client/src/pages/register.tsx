@@ -161,10 +161,15 @@ const Register = () => {
     if (!isValid) {
       return;
     }
+    setIsSubmitting(true);
     try {
-      const registrationId =
-        `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
-      const docRef = await addDoc(collection(db, "registrations"), data);
+      const registrationId = `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
+      await addDoc(collection(db, "registrations"), {
+        ...data,
+        registrationId,
+        createdAt: new Date().toISOString(),
+        status: "pending"
+      });
 
       toast({
         title: "Registration successful",
@@ -172,6 +177,7 @@ const Register = () => {
       });
       form.reset();
       setSelectedEvents([]);
+      setParticipants([]);
       setCurrentStep(0);
     } catch (error) {
       console.error("Registration error:", error);
@@ -180,6 +186,8 @@ const Register = () => {
         title: "Error",
         description: "Failed to submit registration. Please try again.",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
