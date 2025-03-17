@@ -158,23 +158,28 @@ const Register = () => {
 
   const onSubmit = async (data: RegistrationData) => {
     const isValid = await validateStep(true);
-    if (!isValid) {
-      return;
-    }
+    if (!isValid) return;
+    
     setIsSubmitting(true);
     try {
-      const registrationId = `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
-      await addDoc(collection(db, "registrations"), {
+      const registrationData = {
         ...data,
-        registrationId,
+        registrationId: `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase(),
+        status: "pending",
         createdAt: new Date().toISOString(),
-        status: "pending"
-      });
+        participant1Name: participants[0]?.name || '',
+        participant1Grade: participants[0]?.grade || '',
+        participant2Name: participants[1]?.name || '',
+        participant2Grade: participants[1]?.grade || '',
+      };
+
+      await addDoc(collection(db, "registrations"), registrationData);
 
       toast({
-        title: "Registration successful",
-        description: `Your registration ID is ${registrationId}. Please save this for future reference.`,
+        title: "Registration Successful!",
+        description: `Your registration ID is ${registrationData.registrationId}`,
       });
+      
       form.reset();
       setSelectedEvents([]);
       setParticipants([]);
@@ -497,70 +502,53 @@ const Register = () => {
 
                     {currentStep === 3 && (
                       <div className="space-y-6">
-                        {selectedEvents.map((eventId) => {
-                          const event = events.find((e) => e.id === eventId)!;
-                          const eventParticipants = participants.filter(
-                            (p) => p.eventId === eventId,
-                          );
-
-                          return (
-                            <div key={eventId} className="space-y-4">
-                              <h3 className="font-semibold">{event.name}</h3>
-                              {eventParticipants.map((participant, index) => (
-                                <div
-                                  key={index}
-                                  className="grid grid-cols-2 gap-4"
-                                >
-                                  <Input
-                                    placeholder="Participant Name"
-                                    value={participant.name}
-                                    onChange={(e) => {
-                                      const newParticipants = [...participants];
-                                      newParticipants[
-                                        participants.indexOf(participant)
-                                      ].name = e.target.value;
-                                      setParticipants(newParticipants);
-                                      form.setValue(
-                                        "participants",
-                                        newParticipants,
-                                      );
-                                    }}
-                                  />
-                                  <Input
-                                    placeholder="Grade (6-12)"
-                                    value={participant.grade}
-                                    onChange={(e) => {
-                                      const newParticipants = [...participants];
-                                      newParticipants[
-                                        participants.indexOf(participant)
-                                      ].grade = e.target.value;
-                                      setParticipants(newParticipants);
-                                      form.setValue(
-                                        "participants",
-                                        newParticipants,
-                                      );
-                                    }}
-                                  />
-                                </div>
-                              ))}
-                              {eventParticipants.length <
-                                event.maxParticipants && (
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  onClick={() => handleParticipantAdd(eventId)}
-                                >
-                                  Add Participant
-                                </Button>
-                              )}
-                            </div>
-                          );
-                        })}
-                        {form.formState.errors.participants && (
-                          <p className="text-sm text-red-500">
-                            {form.formState.errors.participants.message}
-                          </p>
-                        )}
+                        <div className="space-y-4">
+                          <h3 className="font-semibold">Participant 1</h3>
+                          <div className="grid grid-cols-2 gap-4">
+                            <Input
+                              placeholder="Name"
+                              value={participants[0]?.name || ''}
+                              onChange={(e) => {
+                                const newParticipants = [...participants];
+                                newParticipants[0] = { ...newParticipants[0], name: e.target.value };
+                                setParticipants(newParticipants);
+                              }}
+                            />
+                            <Input
+                              placeholder="Grade (6-12)"
+                              value={participants[0]?.grade || ''}
+                              onChange={(e) => {
+                                const newParticipants = [...participants];
+                                newParticipants[0] = { ...newParticipants[0], grade: e.target.value };
+                                setParticipants(newParticipants);
+                              }}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <h3 className="font-semibold">Participant 2</h3>
+                          <div className="grid grid-cols-2 gap-4">
+                            <Input
+                              placeholder="Name"
+                              value={participants[1]?.name || ''}
+                              onChange={(e) => {
+                                const newParticipants = [...participants];
+                                newParticipants[1] = { ...newParticipants[1], name: e.target.value };
+                                setParticipants(newParticipants);
+                              }}
+                            />
+                            <Input
+                              placeholder="Grade (6-12)"
+                              value={participants[1]?.grade || ''}
+                              onChange={(e) => {
+                                const newParticipants = [...participants];
+                                newParticipants[1] = { ...newParticipants[1], grade: e.target.value };
+                                setParticipants(newParticipants);
+                              }}
+                            />
+                          </div>
+                        </div>
                       </div>
                     )}
                   </motion.div>
