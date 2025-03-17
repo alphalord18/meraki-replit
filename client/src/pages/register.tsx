@@ -160,22 +160,22 @@ const Register = () => {
     const isValid = await validateStep(true);
     if (!isValid) return;
 
-      setIsSubmitting(true);
-      try {
-        const registrationData = {
-          schoolName: data.schoolName,
-          schoolAddress: data.schoolAddress,
-          coordinatorName: data.coordinatorName,
-          coordinatorEmail: data.coordinatorEmail,
-          coordinatorPhone: data.coordinatorPhone,
-          registrationId: `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase(),
-          status: "pending",
-          createdAt: new Date().toISOString(),
-          events: selectedEvents.map(eventId => ({ 
-            eventId, 
-            participants: participants.filter(p => p.eventId === eventId),
-          })),
-        };
+    setIsSubmitting(true);
+    try {
+      const registrationData = {
+        schoolName: data.schoolName,
+        schoolAddress: data.schoolAddress,
+        coordinatorName: data.coordinatorName,
+        coordinatorEmail: data.coordinatorEmail,
+        coordinatorPhone: data.coordinatorPhone,
+        registrationId: `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase(),
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        events: selectedEvents.map(eventId => ({ 
+          eventId, 
+          participants: participants.filter(p => p.eventId === eventId),
+        })),
+      };
 
       await addDoc(collection(db, "registrations"), registrationData);
 
@@ -201,11 +201,26 @@ const Register = () => {
   };
 
   const validateParticipants = () => {
+    let isValid = true;
+
+    // Check if we have any events selected
+    if (selectedEvents.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "No Events Selected",
+        description: "Please go back and select at least one event.",
+      });
+      return false;
+    }
+
+    // Validate each event's participants
     for (const eventId of selectedEvents) {
       const event = events.find((e) => e.id === eventId);
       if (!event) continue;
 
       const eventParticipants = participants.filter((p) => p.eventId === eventId);
+
+      // Check if we have the right number of participants
       if (eventParticipants.length !== event.maxParticipants) {
         toast({
           variant: "destructive",
@@ -214,7 +229,38 @@ const Register = () => {
         });
         return false;
       }
+
+      // Check if all participants have valid details
+      for (const participant of eventParticipants) {
+        if (!participant.name || participant.name.trim() === '') {
+          toast({
+            variant: "destructive",
+            title: "Missing Information",
+            description: `Please enter a name for all ${event.name} participants.`,
+          });
+          return false;
+        }
+
+        if (!participant.grade || !/^([6-9]|1[0-2])$/.test(participant.grade)) {
+          toast({
+            variant: "destructive",
+            title: "Invalid Grade",
+            description: `Please enter a valid grade (6-12) for all ${event.name} participants.`,
+          });
+          return false;
+        }
+
+        if (!/^[a-zA-Z\s'.]+$/.test(participant.name)) {
+          toast({
+            variant: "destructive",
+            title: "Invalid Name Format",
+            description: `Participant names can only contain letters and basic punctuation.`,
+          });
+          return false;
+        }
+      }
     }
+
     return true;
   };
 
@@ -228,37 +274,41 @@ const Register = () => {
       return;
     }
 
-    const newEvents = selectedEvents.includes(eventId)
-      ? selectedEvents.filter((id) => id !== eventId)
-      : [...selectedEvents, eventId];
+    // Check if we're selecting or deselecting
+    const isSelecting = !selectedEvents.includes(eventId);
+
+    const newEvents = isSelecting
+      ? [...selectedEvents, eventId]
+      : selectedEvents.filter((id) => id !== eventId);
 
     setSelectedEvents(newEvents);
     form.setValue("selectedEvents", newEvents);
 
-    // Remove participants for deselected event
-    if (selectedEvents.includes(eventId) && !newEvents.includes(eventId)) {
+    // Handle participant management
+    if (isSelecting) {
+      // Add empty participant slots for the new event
+      const event = events.find((e) => e.id === eventId);
+      if (event) {
+        const newParticipantsForEvent = Array(event.maxParticipants)
+          .fill(null)
+          .map(() => ({ eventId, name: "", grade: "" }));
+
+        setParticipants([...participants, ...newParticipantsForEvent]);
+        form.setValue("participants", [...participants, ...newParticipantsForEvent]);
+      }
+    } else {
+      // Remove participants for deselected event
       const newParticipants = participants.filter((p) => p.eventId !== eventId);
       setParticipants(newParticipants);
       form.setValue("participants", newParticipants);
     }
   };
 
-  const handleParticipantAdd = (eventId: string) => {
-    const event = events.find((e) => e.id === eventId)!;
-    const eventParticipants = participants.filter((p) => p.eventId === eventId);
-
-    if (eventParticipants.length >= event.maxParticipants) {
-      toast({
-        variant: "destructive",
-        title: "Maximum participants reached",
-        description: `You can only add up to ${event.maxParticipants} participants for ${event.name}.`,
-      });
-      return;
-    }
-
-    const newParticipant = { eventId, name: "", grade: "" };
-    setParticipants([...participants, newParticipant]);
-    form.setValue("participants", [...participants, newParticipant]);
+  const updateParticipant = (index: number, field: 'name' | 'grade', value: string) => {
+    const newParticipants = [...participants];
+    newParticipants[index] = { ...newParticipants[index], [field]: value };
+    setParticipants(newParticipants);
+    form.setValue("participants", newParticipants);
   };
 
   const validateStep = async (isSubmit = false) => {
@@ -282,63 +332,7 @@ const Register = () => {
         }
         return await form.trigger(["selectedEvents"]);
       case 3:
-        // Check if both participants have valid information
-        if (!participants[0]?.name || !participants[0]?.grade) {
-          toast({
-            variant: "destructive",
-            title: "Incomplete Participant Details",
-            description: "Please fill in all details for Participant 1.",
-          });
-          return false;
-        }
-
-        // Validate participant 1
-        if (!/^[a-zA-Z\s'.]+$/.test(participants[0].name)) {
-          toast({
-            variant: "destructive",
-            title: "Invalid Name Format",
-            description: "Participant names can only contain letters and basic punctuation.",
-          });
-          return false;
-        }
-        if (!/^([6-9]|1[0-2])$/.test(participants[0].grade)) {
-          toast({
-            variant: "destructive",
-            title: "Invalid Grade",
-            description: "Grade must be between 6 and 12.",
-          });
-          return false;
-        }
-
-        // For participant 2, only validate if details are provided
-        if (participants[1]?.name || participants[1]?.grade) {
-          if (!participants[1]?.name || !participants[1]?.grade) {
-            toast({
-              variant: "destructive",
-              title: "Incomplete Participant Details",
-              description: "Please fill in all details for Participant 2.",
-            });
-            return false;
-          }
-
-          if (!/^[a-zA-Z\s'.]+$/.test(participants[1].name)) {
-            toast({
-              variant: "destructive",
-              title: "Invalid Name Format",
-              description: "Participant names can only contain letters and basic punctuation.",
-            });
-            return false;
-          }
-          if (!/^([6-9]|1[0-2])$/.test(participants[1].grade)) {
-            toast({
-              variant: "destructive",
-              title: "Invalid Grade",
-              description: "Grade must be between 6 and 12.",
-            });
-            return false;
-          }
-        }
-        return true;
+        return validateParticipants();
       default:
         return true;
     }
@@ -350,6 +344,13 @@ const Register = () => {
       setCurrentStep((prev) => prev + 1);
     }
   };
+
+  // Group participants by event ID for better organization
+  const participantsByEvent = selectedEvents.map(eventId => {
+    const event = events.find(e => e.id === eventId);
+    const eventParticipants = participants.filter(p => p.eventId === eventId);
+    return { eventId, event, participants: eventParticipants };
+  });
 
   return (
     <div className="min-h-screen bg-[#F4F4F4] py-20">
@@ -492,110 +493,112 @@ const Register = () => {
                               checked={selectedEvents.includes(event.id)}
                               onChange={() => handleEventSelect(event.id)}
                               className="w-4 h-4"
-                            />
-                            <label htmlFor={event.id}>
-                              {event.name} (Max {event.maxParticipants}{" "}
-                              participants)
-                            </label>
-                          </div>
-                        ))}
-                        {form.formState.errors.selectedEvents && (
-                          <p className="text-sm text-red-500">
-                            {form.formState.errors.selectedEvents.message}
-                          </p>
-                        )}
-                      </div>
-                    )}
+                                                          />
+                                                          <label htmlFor={event.id}>
+                                                            {event.name} (Requires {event.maxParticipants}{" "}
+                                                            {event.maxParticipants === 1 ? "participant" : "participants"})
+                                                          </label>
+                                                        </div>
+                                                      ))}
+                                                      {form.formState.errors.selectedEvents && (
+                                                        <p className="text-sm text-red-500">
+                                                          {form.formState.errors.selectedEvents.message}
+                                                        </p>
+                                                      )}
+                                                    </div>
+                                                  )}
 
-                    {currentStep === 3 && (
-                      <div className="space-y-6">
-                        <div className="space-y-4">
-                          <h3 className="font-semibold">Participant 1</h3>
-                          <div className="grid grid-cols-2 gap-4">
-                            <Input
-                              placeholder="Name"
-                              value={participants[0]?.name || ''}
-                              onChange={(e) => {
-                                const newParticipants = [...participants];
-                                newParticipants[0] = { ...newParticipants[0], name: e.target.value };
-                                setParticipants(newParticipants);
-                              }}
-                            />
-                            <Input
-                              placeholder="Grade (6-12)"
-                              value={participants[0]?.grade || ''}
-                              onChange={(e) => {
-                                const newParticipants = [...participants];
-                                newParticipants[0] = { ...newParticipants[0], grade: e.target.value };
-                                setParticipants(newParticipants);
-                              }}
-                            />
-                          </div>
-                        </div>
+                                                  {currentStep === 3 && (
+                                                    <div className="space-y-8">
+                                                      {participantsByEvent.map((eventGroup) => (
+                                                        <div key={eventGroup.eventId} className="space-y-6 pb-4 border-b">
+                                                          <h3 className="font-semibold text-lg">{eventGroup.event?.name}</h3>
+                                                          <p className="text-sm text-gray-500">
+                                                            Requires {eventGroup.event?.maxParticipants}{" "}
+                                                            {eventGroup.event?.maxParticipants === 1 ? "participant" : "participants"}
+                                                          </p>
 
-                        <div className="space-y-4">
-                          <h3 className="font-semibold">Participant 2</h3>
-                          <div className="grid grid-cols-2 gap-4">
-                            <Input
-                              placeholder="Name"
-                              value={participants[1]?.name || ''}
-                              onChange={(e) => {
-                                const newParticipants = [...participants];
-                                newParticipants[1] = { ...newParticipants[1], name: e.target.value };
-                                setParticipants(newParticipants);
-                              }}
-                            />
-                            <Input
-                              placeholder="Grade (6-12)"
-                              value={participants[1]?.grade || ''}
-                              onChange={(e) => {
-                                const newParticipants = [...participants];
-                                newParticipants[1] = { ...newParticipants[1], grade: e.target.value };
-                                setParticipants(newParticipants);
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
+                                                          {eventGroup.participants.map((participant, pIndex) => {
+                                                            // Find the overall index in the full participants array
+                                                            const globalIndex = participants.findIndex(
+                                                              p => p.eventId === participant.eventId && 
+                                                              p === participant
+                                                            );
 
-                <div className="flex justify-between pt-6">
-                  {currentStep > 0 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setCurrentStep((prev) => prev - 1)}
-                    >
-                      Previous
-                    </Button>
-                  )}
-                  {currentStep < formSteps.length - 1 ? (
-                    <Button
-                      type="button"
-                      className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white ml-auto"
-                      onClick={handleNext}
-                    >
-                      Next
-                    </Button>
-                  ) : (
-                    <Button
-                      type="submit"
-                      className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white ml-auto"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? "Submitting..." : "Submit Registration"}
-                    </Button>
-                  )}
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-};
+                                                            return (
+                                                              <div key={pIndex} className="space-y-4 p-4 bg-gray-50 rounded-md">
+                                                                <h4 className="font-medium">
+                                                                  Participant {pIndex + 1}
+                                                                </h4>
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                  <Input
+                                                                    placeholder="Name"
+                                                                    value={participant.name}
+                                                                    onChange={(e) => updateParticipant(globalIndex, 'name', e.target.value)}
+                                                                  />
+                                                                  <Input
+                                                                    placeholder="Grade (6-12)"
+                                                                    value={participant.grade}
+                                                                    onChange={(e) => updateParticipant(globalIndex, 'grade', e.target.value)}
+                                                                  />
+                                                                </div>
+                                                              </div>
+                                                            );
+                                                          })}
+                                                        </div>
+                                                      ))}
 
-export default Register;
+                                                      {selectedEvents.length === 0 && (
+                                                        <p className="text-center text-gray-500">
+                                                          Please go back and select at least one event.
+                                                        </p>
+                                                      )}
+                                                    </div>
+                                                  )}
+                                                </motion.div>
+                                              </AnimatePresence>
+
+                                              <div className="flex justify-between pt-6">
+                                                {currentStep > 0 && (
+                                                  <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() => setCurrentStep((prev) => prev - 1)}
+                                                  >
+                                                    Previous
+                                                  </Button>
+                                                )}
+                                                {currentStep < formSteps.length - 1 ? (
+                                                  <Button
+                                                    type="button"
+                                                    className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white ml-auto"
+                                                    onClick={handleNext}
+                                                  >
+                                                    Next
+                                                  </Button>
+                                                ) : (
+                <Button
+                  type="button" // Changed from type="submit"
+                  className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white ml-auto"
+                  disabled={isSubmitting}
+                  onClick={async () => {
+                    const isValid = await validateStep();
+                    if (isValid) {
+                      form.handleSubmit(onSubmit)();
+                    }
+                  }}
+                >
+                  {isSubmitting ? "Submitting..." : "Submit Registration"}
+                </Button>
+                                                )}
+                                              </div>
+                                            </form>
+                                          </Form>
+                                        </CardContent>
+                                      </Card>
+                                    </div>
+                                  </div>
+                                );
+                              };
+
+                              export default Register;
