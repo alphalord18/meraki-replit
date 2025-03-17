@@ -47,7 +47,7 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 (async () => {
-  const server = require('http').createServer(app);
+  const server = (await import('http')).createServer(app);
 
   if (app.get("env") === "development") {
     await setupVite(app, server);
