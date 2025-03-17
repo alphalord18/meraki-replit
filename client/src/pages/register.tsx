@@ -160,18 +160,22 @@ const Register = () => {
     const isValid = await validateStep(true);
     if (!isValid) return;
 
-    setIsSubmitting(true);
-    try {
-      const registrationData = {
-        ...data,
-        registrationId: `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase(),
-        status: "pending",
-        createdAt: new Date().toISOString(),
-        participant1Name: participants[0]?.name || '',
-        participant1Grade: participants[0]?.grade || '',
-        participant2Name: participants[1]?.name || '',
-        participant2Grade: participants[1]?.grade || '',
-      };
+      setIsSubmitting(true);
+      try {
+        const registrationData = {
+          schoolName: data.schoolName,
+          schoolAddress: data.schoolAddress,
+          coordinatorName: data.coordinatorName,
+          coordinatorEmail: data.coordinatorEmail,
+          coordinatorPhone: data.coordinatorPhone,
+          registrationId: `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase(),
+          status: "pending",
+          createdAt: new Date().toISOString(),
+          events: selectedEvents.map(eventId => ({ 
+            eventId, 
+            participants: participants.filter(p => p.eventId === eventId),
+          })),
+        };
 
       await addDoc(collection(db, "registrations"), registrationData);
 
