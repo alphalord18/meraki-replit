@@ -75,14 +75,21 @@ const AutoScrollText = () => {
 const Hero = () => {
   return (
     <div className="relative min-h-screen flex items-center overflow-hidden">
-      {/* Animated Gradient Background */}
-      <div
-        className="absolute inset-0 bg-gradient-to-br from-[#2E4A7D] via-[#1B1B1F] to-[#000000] animate-gradient"
-        style={{
-          backgroundSize: '400% 400%',
-          animation: 'gradient 15s ease infinite',
-        }}
-      />
+      {/* Video Background */}
+      <div className="absolute inset-0 z-0">
+        <video 
+          className="w-full h-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+        >
+          <source src="https://assets.mixkit.co/videos/preview/mixkit-group-of-people-in-a-working-meeting-in-an-office-42122-large.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        {/* Overlay to ensure text readability */}
+        <div className="absolute inset-0 bg-black/60 z-1"></div>
+      </div>
 
       {/* Content */}
       <div className="container mx-auto px-4 relative z-10">
