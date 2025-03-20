@@ -111,20 +111,21 @@ const BookIcon = () => (
   </svg>
 );
 
-const PencilIcon = () => (
-  <svg width="70" height="70" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 20L4 20M8.58579 8.58579L18.5858 18.5858C19.3668 19.3668 19.7573 19.7573 20 20C20.2427 20.2427 20.6332 20.6332 21.4142 21.4142C22.1953 22.1953 22.1953 23.4289 21.4142 24.2099C20.6332 24.991 19.3995 24.991 18.6185 24.2099C17.8374 23.4289 17.447 23.0384 17.2043 22.7957C16.9616 22.553 16.5711 22.1626 15.7901 21.3815L5.79006 11.3815C5.00897 10.6004 4.61843 10.2099 4.3757 9.9672C4.13298 9.72448 3.74244 9.33394 2.96135 8.55285C2.18026 7.77176 2.18026 6.53809 2.96135 5.757C3.74244 4.97591 4.9761 4.97591 5.75719 5.757C6.53828 6.53809 6.92882 6.92863 7.17155 7.17136C7.41428 7.41409 7.80482 7.80463 8.58579 8.58579Z" 
-      stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M2 22L4 20M12.5 8.5L16 5M17.5 12L21 8.5" stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
-
 const GlobeIcon = () => (
   <svg width="90" height="90" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" 
       stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
     <path d="M2 12H22" stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
     <path d="M12 2C14.5013 4.73835 15.9228 8.29203 16 12C15.9228 15.708 14.5013 19.2616 12 22C9.49872 19.2616 8.07725 15.708 8 12C8.07725 8.29203 9.49872 4.73835 12 2Z" 
+      stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const LightBulbIcon = () => (
+  <svg width="85" height="85" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 18H14M9 21H15M9.5 14.5C10.6046 14.5 11.5 13.6046 11.5 12.5V9.5H8.5V12.5C8.5 13.6046 9.39543 14.5 10.5 14.5H9.5ZM14.5 14.5C13.3954 14.5 12.5 13.6046 12.5 12.5V9.5H15.5V12.5C15.5 13.6046 14.6046 14.5 13.5 14.5H14.5Z" 
+      stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M17.7857 4.5C16.1185 2.83333 13.6913 2 12 2C10.3087 2 7.88152 2.83333 6.21429 4.5C4.547 6.16667 3.71429 8.5942 3.71429 10.2857C3.71429 11.9772 4.547 14.4047 6.21429 16.0714C7.88152 17.7381 9.71429 18 12 18C14.2857 18 16.1185 17.7381 17.7857 16.0714C19.453 14.4047 20.2857 11.9772 20.2857 10.2857C20.2857 8.5942 19.453 6.16667 17.7857 4.5Z" 
       stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
@@ -141,7 +142,7 @@ const Hero = () => {
           loop
           playsInline
         >
-          <source src="https://videos.pexels.com/video-files/8244250/8244250-uhd_2560_1440_25fps.mp4" type="video/mp4" />
+          <source src="https://assets.mixkit.co/videos/preview/mixkit-group-of-people-in-a-working-meeting-in-an-office-42122-large.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         {/* Overlay to ensure text readability */}
@@ -158,12 +159,12 @@ const Hero = () => {
           <BookIcon />
         </FloatingShape>
         
-        <FloatingShape className="right-40 bottom-48" animationDelay={3.5}>
-          <PencilIcon />
-        </FloatingShape>
-        
         <FloatingShape className="left-16 top-24" animationDelay={2}>
           <GlobeIcon />
+        </FloatingShape>
+        
+        <FloatingShape className="left-24 bottom-32" animationDelay={4}>
+          <LightBulbIcon />
         </FloatingShape>
       </div>
 
