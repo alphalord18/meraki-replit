@@ -72,6 +72,81 @@ const AutoScrollText = () => {
   );
 };
 
+// 3D Floating Element Components
+const FloatingShape = ({ children, className, animationDelay = 0 }) => {
+  return (
+    <motion.div
+      className={`absolute ${className}`}
+      animate={{
+        y: [0, -15, 0],
+        rotate: [0, 5, -5, 0],
+        scale: [1, 1.05, 0.95, 1],
+      }}
+      transition={{
+        duration: 8,
+        delay: animationDelay,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+const MicrophoneIcon = () => (
+  <svg width="120" height="120" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 1C10.3431 1 9 2.34315 9 4V12C9 13.6569 10.3431 15 12 15C13.6569 15 15 13.6569 15 12V4C15 2.34315 13.6569 1 12 1Z" 
+      fill="none" stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M19 10V12C19 15.866 15.866 19 12 19M5 10V12C5 15.866 8.13401 19 12 19M12 19V23M8 23H16" 
+      fill="none" stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const QuoteIcon = () => (
+  <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M9.13456 9.35999C9.52157 7.55732 8.9075 5.50596 7 4.99998L7.83395 3.41992C10.4581 3.83343 12.1913 6.14055 11.9516 9.35993L9.13456 9.35999ZM14.9699 9.35999C15.357 7.55732 14.7429 5.50596 12.8354 4.99998L13.6693 3.41992C16.2935 3.83343 18.0267 6.14055 17.787 9.35993L14.9699 9.35999Z" 
+      fill="#FFC857"/>
+    <path d="M11.9516 9.36C11.8995 9.93185 11.7858 10.4987 11.6091 11.0492C11.1989 12.3863 10.4122 13.6063 9.1434 14.5182C7.89453 15.4201 6.35137 15.9962 4.52216 16.1794L4 14.5193C5.49048 14.3761 6.69315 13.9085 7.58861 13.3033C8.45399 12.7139 9.01348 12.0032 9.3329 11.371C9.48755 11.0632 9.59668 10.774 9.66573 10.527L9.1345 10.5273M14.97 10.5273L14.4387 10.527C14.5078 10.774 14.6169 11.0632 14.7716 11.371C15.091 12.0032 15.6505 12.7139 16.5159 13.3033C17.4113 13.9085 18.614 14.3761 20.1045 14.5193L19.5823 16.1794C17.7531 15.9962 16.21 15.4201 14.9611 14.5182C13.6923 13.6063 12.9056 12.3863 12.4954 11.0492C12.3187 10.4987 12.2049 9.93185 12.1529 9.36L14.97 9.36" 
+      stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const BookIcon = () => (
+  <svg width="100" height="100" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4 19.5C4 18.837 4 18.5055 4.10222 18.2034C4.37962 17.3338 5.13777 16.7014 6.06938 16.5144C6.37905 16.4486 6.75113 16.4486 7.49528 16.4486H20M4 19.5V6.2C4 5.0799 4 4.51984 4.21799 4.09202C4.40973 3.71569 4.71569 3.40973 5.09202 3.21799C5.51984 3 6.0799 3 7.2 3H16.8C17.9201 3 18.4802 3 18.908 3.21799C19.2843 3.40973 19.5903 3.71569 19.782 4.09202C20 4.51984 20 5.0799 20 6.2V16.4486M4 19.5C4 20.163 4 20.4945 4.10222 20.7966C4.37962 21.6662 5.13777 22.2986 6.06938 22.4856C6.37905 22.5514 6.75113 22.5514 7.49528 22.5514H18.8C19.3046 22.5514 19.5569 22.5514 19.7332 22.4453C19.8906 22.3503 20 22.1907 20 22.0138C20 21.819 20 21.5504 20 21.0132V16.4486" 
+      stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M8 7H16M8 11H13" stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const PencilIcon = () => (
+  <svg width="70" height="70" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 20L4 20M8.58579 8.58579L18.5858 18.5858C19.3668 19.3668 19.7573 19.7573 20 20C20.2427 20.2427 20.6332 20.6332 21.4142 21.4142C22.1953 22.1953 22.1953 23.4289 21.4142 24.2099C20.6332 24.991 19.3995 24.991 18.6185 24.2099C17.8374 23.4289 17.447 23.0384 17.2043 22.7957C16.9616 22.553 16.5711 22.1626 15.7901 21.3815L5.79006 11.3815C5.00897 10.6004 4.61843 10.2099 4.3757 9.9672C4.13298 9.72448 3.74244 9.33394 2.96135 8.55285C2.18026 7.77176 2.18026 6.53809 2.96135 5.757C3.74244 4.97591 4.9761 4.97591 5.75719 5.757C6.53828 6.53809 6.92882 6.92863 7.17155 7.17136C7.41428 7.41409 7.80482 7.80463 8.58579 8.58579Z" 
+      stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M2 22L4 20M12.5 8.5L16 5M17.5 12L21 8.5" stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const GlobeIcon = () => (
+  <svg width="90" height="90" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" 
+      stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M2 12H22" stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 2C14.5013 4.73835 15.9228 8.29203 16 12C15.9228 15.708 14.5013 19.2616 12 22C9.49872 19.2616 8.07725 15.708 8 12C8.07725 8.29203 9.49872 4.73835 12 2Z" 
+      stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const LightBulbIcon = () => (
+  <svg width="85" height="85" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 18H14M9 21H15M9.5 14.5C10.6046 14.5 11.5 13.6046 11.5 12.5V9.5H8.5V12.5C8.5 13.6046 9.39543 14.5 10.5 14.5H9.5ZM14.5 14.5C13.3954 14.5 12.5 13.6046 12.5 12.5V9.5H15.5V12.5C15.5 13.6046 14.6046 14.5 13.5 14.5H14.5Z" 
+      stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M17.7857 4.5C16.1185 2.83333 13.6913 2 12 2C10.3087 2 7.88152 2.83333 6.21429 4.5C4.547 6.16667 3.71429 8.5942 3.71429 10.2857C3.71429 11.9772 4.547 14.4047 6.21429 16.0714C7.88152 17.7381 9.71429 18 12 18C14.2857 18 16.1185 17.7381 17.7857 16.0714C19.453 14.4047 20.2857 11.9772 20.2857 10.2857C20.2857 8.5942 19.453 6.16667 17.7857 4.5Z" 
+      stroke="#FFC857" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
 const Hero = () => {
   return (
     <div className="relative min-h-screen flex items-center overflow-hidden">
@@ -84,15 +159,42 @@ const Hero = () => {
           loop
           playsInline
         >
-          <source src="https://assets.mixkit.co/videos/preview/mixkit-group-of-people-in-a-working-meeting-in-an-office-42122-large.mp4" type="video/mp4" />
+          <source src="https://videos.pexels.com/video-files/8244250/8244250-uhd_2560_1440_25fps.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         {/* Overlay to ensure text readability */}
         <div className="absolute inset-0 bg-black/60 z-1"></div>
       </div>
 
+      {/* 3D Floating Elements */}
+      <div className="absolute inset-0 z-10 overflow-hidden pointer-events-none">
+        <FloatingShape className="right-12 top-16">
+          <MicrophoneIcon />
+        </FloatingShape>
+        
+        <FloatingShape className="right-32 top-48" animationDelay={1.5}>
+          <QuoteIcon />
+        </FloatingShape>
+        
+        <FloatingShape className="right-8 bottom-24" animationDelay={2.5}>
+          <BookIcon />
+        </FloatingShape>
+        
+        <FloatingShape className="right-40 bottom-48" animationDelay={3.5}>
+          <PencilIcon />
+        </FloatingShape>
+        
+        <FloatingShape className="left-16 top-24" animationDelay={2}>
+          <GlobeIcon />
+        </FloatingShape>
+        
+        <FloatingShape className="left-24 bottom-32" animationDelay={4}>
+          <LightBulbIcon />
+        </FloatingShape>
+      </div>
+
       {/* Content */}
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="container mx-auto px-4 relative z-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -153,21 +255,45 @@ const Hero = () => {
         </motion.div>
       </div>
 
-      {/* Floating 3D Elements */}
-      <motion.div
-        className="absolute right-0 top-1/2 -translate-y-1/2 hidden lg:block"
-        animate={{
-          y: [0, -20, 0],
-          rotateZ: [0, 5, -5, 0],
-        }}
-        transition={{
-          duration: 6,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      >
-        {/* Add 3D floating elements here */}
-      </motion.div>
+      {/* Particles Effect */}
+      <div className="absolute inset-0 z-5 opacity-30">
+        <motion.div
+          className="absolute w-2 h-2 rounded-full bg-white"
+          style={{ left: '10%', top: '20%' }}
+          animate={{ y: [0, 100], opacity: [1, 0] }}
+          transition={{ duration: 3, repeat: Infinity, repeatType: "loop", ease: "easeInOut", delay: 0.2 }}
+        />
+        <motion.div
+          className="absolute w-2 h-2 rounded-full bg-white"
+          style={{ left: '20%', top: '40%' }}
+          animate={{ y: [0, 100], opacity: [1, 0] }}
+          transition={{ duration: 4, repeat: Infinity, repeatType: "loop", ease: "easeInOut", delay: 0.5 }}
+        />
+        <motion.div
+          className="absolute w-2 h-2 rounded-full bg-white"
+          style={{ left: '80%', top: '15%' }}
+          animate={{ y: [0, 100], opacity: [1, 0] }}
+          transition={{ duration: 3.5, repeat: Infinity, repeatType: "loop", ease: "easeInOut", delay: 1 }}
+        />
+        <motion.div
+          className="absolute w-2 h-2 rounded-full bg-white"
+          style={{ left: '85%', top: '50%' }}
+          animate={{ y: [0, 100], opacity: [1, 0] }}
+          transition={{ duration: 5, repeat: Infinity, repeatType: "loop", ease: "easeInOut", delay: 1.5 }}
+        />
+        <motion.div
+          className="absolute w-2 h-2 rounded-full bg-white"
+          style={{ left: '30%', top: '25%' }}
+          animate={{ y: [0, 100], opacity: [1, 0] }}
+          transition={{ duration: 4.5, repeat: Infinity, repeatType: "loop", ease: "easeInOut", delay: 0.8 }}
+        />
+        <motion.div
+          className="absolute w-2 h-2 rounded-full bg-white"
+          style={{ left: '70%', top: '35%' }}
+          animate={{ y: [0, 100], opacity: [1, 0] }}
+          transition={{ duration: 3.2, repeat: Infinity, repeatType: "loop", ease: "easeInOut", delay: 1.2 }}
+        />
+      </div>
     </div>
   );
 };
