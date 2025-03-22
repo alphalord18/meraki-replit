@@ -37,6 +37,15 @@ type Blog = {
   createdAt: string;
 };
 
+// Function to format date in DD/MM/YYYY format
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 const Blog = () => {
   const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
 
@@ -69,7 +78,7 @@ const Blog = () => {
                   <div className="p-4 md:p-6">
                     <div className="flex items-center gap-2 text-xs md:text-sm text-gray-500 mb-2 md:mb-3">
                       <Calendar className="w-3 h-3 md:w-4 md:h-4" />
-                      {new Date(blog.createdAt).toLocaleDateString()}
+                      {formatDate(blog.createdAt)}
                     </div>
                     <h3 className="text-lg md:text-xl font-bold mb-2" style={{ fontFamily: "Editorial New Bold" }}>
                       {blog.title}
@@ -99,34 +108,36 @@ const Blog = () => {
                 className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col"
                 onClick={(e) => e.stopPropagation()}
               >
-                {selectedBlog.imageUrl && (
-                  <div className="aspect-video">
-                    <img
-                      src={selectedBlog.imageUrl}
-                      alt={selectedBlog.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                
-                <ScrollArea className="flex-grow overflow-y-auto max-h-[60vh]">
-                  <div className="p-4 md:p-8">
-                    <div className="flex items-center gap-2 text-xs md:text-sm text-gray-500 mb-3 md:mb-4">
-                      <Calendar className="w-3 h-3 md:w-4 md:h-4" />
-                      {new Date(selectedBlog.createdAt).toLocaleDateString()}
-                    </div>
-                    <h2 className="text-2xl md:text-3xl font-bold mb-2 md:mb-4" style={{ fontFamily: "Editorial New Bold" }}>
-                      {selectedBlog.title}
-                    </h2>
-                    <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">By {selectedBlog.author}</p>
+                <ScrollArea className="flex-grow overflow-y-auto max-h-[80vh]">
+                  <div>
+                    {selectedBlog.imageUrl && (
+                      <div className="h-40 md:h-64 overflow-hidden">
+                        <img
+                          src={selectedBlog.imageUrl}
+                          alt={selectedBlog.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="p-4 md:p-8">
+                      <div className="flex items-center gap-2 text-xs md:text-sm text-gray-500 mb-3 md:mb-4">
+                        <Calendar className="w-3 h-3 md:w-4 md:h-4" />
+                        {formatDate(selectedBlog.createdAt)}
+                      </div>
+                      <h2 className="text-2xl md:text-3xl font-bold mb-2 md:mb-4" style={{ fontFamily: "Editorial New Bold" }}>
+                        {selectedBlog.title}
+                      </h2>
+                      <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">By {selectedBlog.author}</p>
 
-                    <div className="prose max-w-none text-sm md:text-base">
-                      <div dangerouslySetInnerHTML={{ __html: selectedBlog.content }} />
+                      <div className="prose max-w-none text-sm md:text-base">
+                        <div dangerouslySetInnerHTML={{ __html: selectedBlog.content }} />
+                      </div>
                     </div>
                   </div>
                 </ScrollArea>
                 
-                <div className="p-4 md:p-6 border-t border-gray-100 mt-auto">
+                <div className="p-4 border-t border-gray-100 mt-auto">
                   <Button 
                     onClick={() => setSelectedBlog(null)}
                     className="ml-auto block"
