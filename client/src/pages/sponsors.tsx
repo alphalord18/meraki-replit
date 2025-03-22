@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Mail } from "lucide-react";
+import { useRouter } from "next/router";
 
 const sponsorshipTiers = [
   {
@@ -66,16 +67,22 @@ const tempSponsors = [
 ];
 
 const Sponsors = () => {
+  const router = useRouter();
+
+  const handleContactClick = () => {
+    router.push("/contact");
+  };
+
   return (
     <div className="min-h-screen bg-[#F4F4F4]">
       {/* Sponsorship Packages */}
-      <section className="py-20">
+      <section className="py-16">
         <div className="container mx-auto px-4">
           <h1 className="text-5xl font-bold mb-12 text-center" style={{ fontFamily: "Noe Display" }}>
             Become a Sponsor
           </h1>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
             {sponsorshipTiers.map((tier, index) => (
               <motion.div
                 key={tier.name}
@@ -99,7 +106,11 @@ const Sponsors = () => {
                     </ul>
                   </CardContent>
                   <div className="p-6 pt-0">
-                    <Button className="w-full" variant="default">
+                    <Button 
+                      className="w-full" 
+                      variant="default"
+                      onClick={handleContactClick}
+                    >
                       <Mail className="mr-2 h-4 w-4" /> Contact Us
                     </Button>
                   </div>
@@ -111,7 +122,7 @@ const Sponsors = () => {
       </section>
 
       {/* Past Sponsors */}
-      <section className="py-20 bg-white">
+      <section className="py-10 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold mb-12 text-center" style={{ fontFamily: "Noe Display" }}>
             Past Sponsors
