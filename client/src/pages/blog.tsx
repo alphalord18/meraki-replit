@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,13 +41,13 @@ const Blog = () => {
   const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
 
   return (
-    <div className="min-h-screen bg-[#F4F4F4] py-20">
+    <div className="min-h-screen bg-[#F4F4F4] py-10 md:py-20">
       <div className="container mx-auto px-4">
-        <h1 className="text-5xl font-bold mb-12 text-center" style={{ fontFamily: "Noe Display" }}>
+        <h1 className="text-3xl md:text-5xl font-bold mb-8 md:mb-12 text-center" style={{ fontFamily: "Noe Display" }}>
           Blog & Literary Works
         </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           {tempBlogs.map((blog) => (
             <motion.div
               key={blog.id}
@@ -67,16 +66,16 @@ const Blog = () => {
                       />
                     </div>
                   )}
-                  <div className="p-6">
-                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                      <Calendar className="w-4 h-4" />
+                  <div className="p-4 md:p-6">
+                    <div className="flex items-center gap-2 text-xs md:text-sm text-gray-500 mb-2 md:mb-3">
+                      <Calendar className="w-3 h-3 md:w-4 md:h-4" />
                       {new Date(blog.createdAt).toLocaleDateString()}
                     </div>
-                    <h3 className="text-xl font-bold mb-2" style={{ fontFamily: "Editorial New Bold" }}>
+                    <h3 className="text-lg md:text-xl font-bold mb-2" style={{ fontFamily: "Editorial New Bold" }}>
                       {blog.title}
                     </h3>
-                    <p className="text-gray-600">{blog.content.slice(0, 150)}...</p>
-                    <p className="text-sm text-[#2E4A7D] mt-4">By {blog.author}</p>
+                    <p className="text-sm md:text-base text-gray-600">{blog.content.replace(/<[^>]*>/g, '').slice(0, 120)}...</p>
+                    <p className="text-xs md:text-sm text-[#2E4A7D] mt-3 md:mt-4">By {blog.author}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -97,38 +96,44 @@ const Blog = () => {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-white rounded-lg max-w-3xl w-full max-h-[80vh] overflow-hidden"
+                className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col"
                 onClick={(e) => e.stopPropagation()}
               >
-                <ScrollArea className="h-full">
-                  {selectedBlog.imageUrl && (
-                    <div className="aspect-video">
-                      <img
-                        src={selectedBlog.imageUrl}
-                        alt={selectedBlog.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <div className="p-8">
-                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                      <Calendar className="w-4 h-4" />
+                {selectedBlog.imageUrl && (
+                  <div className="aspect-video">
+                    <img
+                      src={selectedBlog.imageUrl}
+                      alt={selectedBlog.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                
+                <ScrollArea className="flex-grow overflow-y-auto max-h-[60vh]">
+                  <div className="p-4 md:p-8">
+                    <div className="flex items-center gap-2 text-xs md:text-sm text-gray-500 mb-3 md:mb-4">
+                      <Calendar className="w-3 h-3 md:w-4 md:h-4" />
                       {new Date(selectedBlog.createdAt).toLocaleDateString()}
                     </div>
-                    <h2 className="text-3xl font-bold mb-4" style={{ fontFamily: "Editorial New Bold" }}>
+                    <h2 className="text-2xl md:text-3xl font-bold mb-2 md:mb-4" style={{ fontFamily: "Editorial New Bold" }}>
                       {selectedBlog.title}
                     </h2>
-                    <p className="text-gray-600 mb-6">By {selectedBlog.author}</p>
+                    <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">By {selectedBlog.author}</p>
 
-                    <div className="prose max-w-none">
+                    <div className="prose max-w-none text-sm md:text-base">
                       <div dangerouslySetInnerHTML={{ __html: selectedBlog.content }} />
-                    </div>
-
-                    <div className="mt-8 flex justify-end">
-                      <Button onClick={() => setSelectedBlog(null)}>Close</Button>
                     </div>
                   </div>
                 </ScrollArea>
+                
+                <div className="p-4 md:p-6 border-t border-gray-100 mt-auto">
+                  <Button 
+                    onClick={() => setSelectedBlog(null)}
+                    className="ml-auto block"
+                  >
+                    Close
+                  </Button>
+                </div>
               </motion.div>
             </motion.div>
           )}
