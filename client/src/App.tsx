@@ -13,7 +13,7 @@ import Sponsors from "@/pages/sponsors";
 import Register from "@/pages/register";
 import Contact from "@/pages/contact";
 import NotFound from "@/pages/not-found";
-import { routes, usePrefetchRoutes } from "./lib/routes";
+import { routes, usePrefetchRoutes, notFoundRoute } from "./lib/routes";
 
 function Router() {
   usePrefetchRoutes();
