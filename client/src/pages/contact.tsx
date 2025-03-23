@@ -107,7 +107,7 @@ const Contact = () => {
 
             <div className="h-[400px] rounded-lg overflow-hidden">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3558.3371897335756!2d80.99564327537284!3d26.85853947677827!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399bfd3e1c25df85%3A0xa6b78d5b0d4b27e2!2sSeth%20M.R.%20Jaipuria%20School!5e0!3m2!1sen!2sin!4v1709571241599!5m2!1sen!2sin"
+                src="https://www.google.com/maps/embed/v1/place?key=AIzaSyB2NIWI3Tv9iDPrlnowr_0ZqZWoAQydKJU&q=Seth%20M.%20R.%20Jaipuria%20School%2C%20Vineet%20Khand%2C%20Gomti%20Nagar%2C%20Lucknow%2C%20Uttar%20Pradesh%2C%20India&zoom=16&maptype=roadmap"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
