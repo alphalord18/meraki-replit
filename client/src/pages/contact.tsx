@@ -107,7 +107,7 @@ const Contact = () => {
 
             <div className="h-[400px] rounded-lg overflow-hidden">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3503.2851564449876!2d77.22746857607422!3d28.59373908434078!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce2daa9eb4d0b%3A0x717971125923e5d!2sIndia%20Gate!5e0!3m2!1sen!2sin!4v1709561241599!5m2!1sen!2sin"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3558.3371897335756!2d80.99564327537284!3d26.85853947677827!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399bfd3e1c25df85%3A0xa6b78d5b0d4b27e2!2sSeth%20M.R.%20Jaipuria%20School!5e0!3m2!1sen!2sin!4v1709571241599!5m2!1sen!2sin"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
