@@ -84,7 +84,7 @@ const Hero = () => {
           loop
           playsInline
         >
-          <source src="https://www.aajtak.in/c0349a0c-46d4-46a0-81fd-89b2107fb4b9blob:https://www.aajtak.in/c0349a0c-46d4-46a0-81fd-89b2107fb4b9" type="video/mp4" />
+          <source src="https://videos.pexels.com/video-files/8244322/uhd_25fps.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         {/* Overlay to ensure text readability */}
