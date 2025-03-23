@@ -13,8 +13,10 @@ import Sponsors from "@/pages/sponsors";
 import Register from "@/pages/register";
 import Contact from "@/pages/contact";
 import NotFound from "@/pages/not-found";
+import { routes, usePrefetchRoutes } from "./lib/routes";
 
 function Router() {
+  usePrefetchRoutes();
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -27,7 +29,7 @@ function Router() {
           <Route path="/sponsors" component={Sponsors} />
           <Route path="/register" component={Register} />
           <Route path="/contact" component={Contact} />
-          <Route component={NotFound} />
+          <Route path="/not-found" component={NotFound} />
         </Switch>
       </main>
       <Footer />
