@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Mail } from "lucide-react";
-import { useRouter } from "next/router";
 
 const sponsorshipTiers = [
   {
@@ -67,12 +66,6 @@ const tempSponsors = [
 ];
 
 const Sponsors = () => {
-  const router = useRouter();
-
-  const handleContactClick = () => {
-    router.push("/contact");
-  };
-
   return (
     <div className="min-h-screen bg-[#F4F4F4]">
       {/* Sponsorship Packages */}
@@ -109,7 +102,7 @@ const Sponsors = () => {
                     <Button 
                       className="w-full" 
                       variant="default"
-                      onClick={handleContactClick}
+                      onClick={() => window.location.href = '/register'}
                     >
                       <Mail className="mr-2 h-4 w-4" /> Contact Us
                     </Button>
