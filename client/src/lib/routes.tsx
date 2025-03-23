@@ -1,41 +1,70 @@
 // src/lib/routes.tsx
-import { lazy, useEffect } from 'react';
+import { useEffect } from 'react';
 
-// Define a simpler structure that requires less duplication
+// Define the route configuration type
 type RouteConfig = {
   path: string;
-  componentPath: string; // Direct path to the component file
+  component: React.ComponentType<any>;
+  preload: () => Promise<any>;
 };
 
-// Create a function that generates both the component and preload function
-const createRoute = (config: RouteConfig) => {
-  const { path, componentPath } = config;
-  
-  return {
-    ...config,
-    // Only define the import path once
-    component: lazy(() => import(`../${componentPath}`)),
-    preload: () => import(`../${componentPath}`)
-  };
-};
-
-// Define your routes just once with minimal information
-const routeConfigs: RouteConfig[] = [
-  { path: '/', componentPath: 'pages/Home' },
-  { path: '/contact', componentPath: 'pages/Contact' },
-  { path: '/sponsors', componentPath: 'pages/Sponsors' },
-  { path: '/events', componentPath: 'pages/Events' },
-  // Add new routes by just specifying path and component path
+// Create routes array
+export const routes: RouteConfig[] = [
+  {
+    path: '/',
+    component: Home,
+    preload: () => import('@/pages/home').then(m => m)
+  },
+  {
+    path: '/events',
+    component: Events,
+    preload: () => import('@/pages/events').then(m => m)
+  },
+  {
+    path: '/speakers',
+    component: Speakers,
+    preload: () => import('@/pages/speakers').then(m => m)
+  },
+  {
+    path: '/blog',
+    component: Blog,
+    preload: () => import('@/pages/blog').then(m => m)
+  },
+  {
+    path: '/sponsors',
+    component: Sponsors,
+    preload: () => import('@/pages/sponsors').then(m => m)
+  },
+  {
+    path: '/register',
+    component: Register,
+    preload: () => import('@/pages/register').then(m => m)
+  },
+  {
+    path: '/contact',
+    component: Contact,
+    preload: () => import('@/pages/contact').then(m => m)
+  }
 ];
 
-// Generate the full route objects
-export const routes = routeConfigs.map(createRoute);
-
-// Your prefetching utilities
-export const prefetchAllRoutes = () => {
-  routes.forEach(route => route.preload());
+// Add the not found route separately
+export const notFoundRoute = {
+  component: NotFound,
+  preload: () => import('@/pages/not-found').then(m => m)
 };
 
+// Utility function to prefetch all routes
+export const prefetchAllRoutes = () => {
+  // Preload all regular routes
+  routes.forEach(route => {
+    route.preload();
+  });
+  
+  // Also preload the not found route
+  notFoundRoute.preload();
+};
+
+// React hook to use in components
 export const usePrefetchRoutes = () => {
   useEffect(() => {
     prefetchAllRoutes();
