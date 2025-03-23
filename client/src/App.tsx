@@ -13,19 +13,21 @@ import Sponsors from "@/pages/sponsors";
 import Register from "@/pages/register";
 import Contact from "@/pages/contact";
 import NotFound from "@/pages/not-found";
-import { routes, usePrefetchRoutes, notFoundRoute } from "./lib/routes";
 
 function Router() {
-  usePrefetchRoutes();
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow">
         <Switch>
-          {routes.map(route => (
-            <Route key={route.path} path={route.path} component={route.component} />
-          ))}
-          <Route component={notFoundRoute.component} />
+          <Route path="/" component={Home} />
+          <Route path="/events" component={Events} />
+          <Route path="/speakers" component={Speakers} />
+          <Route path="/blog" component={Blog} />
+          <Route path="/sponsors" component={Sponsors} />
+          <Route path="/register" component={Register} />
+          <Route path="/contact" component={Contact} />
+          <Route component={NotFound} />
         </Switch>
       </main>
       <Footer />
