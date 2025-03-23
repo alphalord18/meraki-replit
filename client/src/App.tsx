@@ -22,14 +22,10 @@ function Router() {
       <Navbar />
       <main className="flex-grow">
         <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/events" component={Events} />
-          <Route path="/speakers" component={Speakers} />
-          <Route path="/blog" component={Blog} />
-          <Route path="/sponsors" component={Sponsors} />
-          <Route path="/register" component={Register} />
-          <Route path="/contact" component={Contact} />
-          <Route path="/not-found" component={NotFound} />
+          {routes.map(route => (
+            <Route key={route.path} path={route.path} component={route.component} />
+          ))}
+          <Route component={notFoundRoute.component} />
         </Switch>
       </main>
       <Footer />
