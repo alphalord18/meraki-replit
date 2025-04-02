@@ -402,6 +402,7 @@ const Register = () => {
                   >
                     {currentStep === 0 && (
                       <>
+                        <h2 className="font-semibold text-xl text-[#2E4A7D]">School Details</h2>
                         <FormField
                           control={form.control}
                           name="schoolName"
@@ -433,6 +434,7 @@ const Register = () => {
 
                     {currentStep === 1 && (
                       <>
+                        <h2 className="font-semibold text-xl text-[#2E4A7D]">Coordinator Details</h2>
                         <FormField
                           control={form.control}
                           name="coordinatorName"
@@ -481,6 +483,7 @@ const Register = () => {
 
                     {currentStep === 2 && (
                       <div className="space-y-4">
+                        <h2 className="font-semibold text-xl text-[#2E4A7D]">Event Selection</h2>
                         <h3 className="font-semibold">Select Events (Max 3)</h3>
                         {events.map((event) => (
                           <div
@@ -510,6 +513,7 @@ const Register = () => {
 
                                                   {currentStep === 3 && (
                                                     <div className="space-y-8">
+                                                      <h2 className="font-semibold text-xl text-[#2E4A7D]">Participant Details</h2>
                                                       {participantsByEvent.map((eventGroup) => (
                                                         <div key={eventGroup.eventId} className="space-y-6 pb-4 border-b">
                                                           <h3 className="font-semibold text-lg">{eventGroup.event?.name}</h3>
