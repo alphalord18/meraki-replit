@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button"; // Added missing import
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 
 // Temporary event data
 const tempEvents = [
@@ -45,16 +45,16 @@ const tempEvents = [
 ];
 
 const Events = () => {
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   return (
-    <div className="min-h-screen bg-[#F4F4F4] py-20">
+    <div className="min-h-screen bg-[#F4F4F4] py-12 sm:py-20">
       <div className="container mx-auto px-4">
-        <h1 className="text-5xl font-bold mb-12 text-center" style={{ fontFamily: "Noe Display" }}>
+        <h1 className="text-4xl sm:text-5xl font-bold mb-8 sm:mb-12 text-center" style={{ fontFamily: "Noe Display" }}>
           Our Events
         </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {tempEvents.map((event) => (
             <motion.div
               key={event.id}
@@ -62,16 +62,13 @@ const Events = () => {
               onClick={() => setSelectedEvent(event)}
               className="cursor-pointer"
             >
-              <Card className="bg-white hover:shadow-xl transition-shadow">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold mb-2" style={{ fontFamily: "Editorial New Bold" }}>
+              <Card className="bg-white hover:shadow-xl transition-shadow h-full">
+                <CardContent className="p-4 sm:p-6 flex flex-col h-full">
+                  <h3 className="text-lg sm:text-xl font-bold mb-2" style={{ fontFamily: "Editorial New Bold" }}>
                     {event.title}
                   </h3>
-                  <p className="text-gray-600 mb-4">{event.description}</p>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Calendar className="w-4 h-4" />
-                    {new Date(event.date).toLocaleDateString()}
-                  </div>
+                  <p className="text-gray-600 mb-4 flex-grow">{event.description}</p>
+                  {/* Removed date display as requested */}
                   <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
                     <MapPin className="w-4 h-4" />
                     {event.venue}
@@ -103,35 +100,37 @@ const Events = () => {
                 className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
-                <ScrollArea className="p-6 h-full">
-                  <h2 className="text-3xl font-bold mb-4" style={{ fontFamily: "Editorial New Bold" }}>
-                    {selectedEvent.title}
-                  </h2>
+                <ScrollArea className="p-4 sm:p-6 h-full">
+                  <div className="flex flex-col">
+                    <h2 className="text-2xl sm:text-3xl font-bold mb-4" style={{ fontFamily: "Editorial New Bold" }}>
+                      {selectedEvent.title}
+                    </h2>
 
-                  <div className="flex items-center gap-4 mb-6 text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-5 h-5" />
-                      {new Date(selectedEvent.date).toLocaleDateString()}
+                    <div className="flex flex-wrap items-center gap-4 mb-6 text-gray-600">
+                      {/* Venue information - always visible but responsive */}
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-5 h-5" />
+                        <span className="text-sm sm:text-base">{selectedEvent.venue}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-5 h-5" />
-                      {new Date(selectedEvent.date).toLocaleTimeString()}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-5 h-5" />
-                      {selectedEvent.venue}
-                    </div>
-                  </div>
 
-                  <div className="prose max-w-none">
-                    <h3 className="text-xl font-semibold mb-2">About the Event</h3>
-                    <p className="mb-6">{selectedEvent.description}</p>
+                    <div className="prose max-w-none">
+                      <h3 className="text-lg sm:text-xl font-semibold mb-2">About the Event</h3>
+                      <p className="mb-6">{selectedEvent.description}</p>
 
-                    <h3 className="text-xl font-semibold mb-2">Rules & Guidelines</h3>
-                    <div dangerouslySetInnerHTML={{ __html: selectedEvent.rules }} />
-                  </div>
-                  <div className="mt-8 flex justify-end">
-                    <Button onClick={() => setSelectedEvent(null)}>Close</Button>
+                      <h3 className="text-lg sm:text-xl font-semibold mb-2">Rules & Guidelines</h3>
+                      <div dangerouslySetInnerHTML={{ __html: selectedEvent.rules }} />
+                    </div>
+                    
+                    {/* Made button container full-width and always visible */}
+                    <div className="mt-8 flex justify-center sm:justify-end w-full">
+                      <Button 
+                        onClick={() => setSelectedEvent(null)}
+                        className="w-full sm:w-auto"
+                      >
+                        Close
+                      </Button>
+                    </div>
                   </div>
                 </ScrollArea>
               </motion.div>
