@@ -402,7 +402,7 @@ const Register = () => {
                   >
                     {currentStep === 0 && (
                       <>
-                        <h2 className="font-semibold text-xl text-[#2E4A7D]">School Details</h2>
+                        {currentStep === 0 && <h2 className="font-semibold text-xl text-[#2E4A7D]">School Details</h2>}
                         <FormField
                           control={form.control}
                           name="schoolName"
@@ -434,7 +434,7 @@ const Register = () => {
 
                     {currentStep === 1 && (
                       <>
-                        <h2 className="font-semibold text-xl text-[#2E4A7D]">Coordinator Details</h2>
+                        {currentStep === 1 && <h2 className="font-semibold text-xl text-[#2E4A7D]">Coordinator Details</h2>}
                         <FormField
                           control={form.control}
                           name="coordinatorName"
@@ -483,7 +483,7 @@ const Register = () => {
 
                     {currentStep === 2 && (
                       <div className="space-y-4">
-                        <h2 className="font-semibold text-xl text-[#2E4A7D]">Event Selection</h2>
+                        {currentStep === 2 && <h2 className="font-semibold text-xl text-[#2E4A7D]">Event Selection</h2>}
                         <h3 className="font-semibold">Select Events (Max 3)</h3>
                         {events.map((event) => (
                           <div
@@ -496,113 +496,113 @@ const Register = () => {
                               checked={selectedEvents.includes(event.id)}
                               onChange={() => handleEventSelect(event.id)}
                               className="w-4 h-4"
-                                                          />
-                                                          <label htmlFor={event.id}>
-                                                            {event.name} (Requires {event.maxParticipants}{" "}
-                                                            {event.maxParticipants === 1 ? "participant" : "participants"})
-                                                          </label>
-                                                        </div>
-                                                      ))}
-                                                      {form.formState.errors.selectedEvents && (
-                                                        <p className="text-sm text-red-500">
-                                                          {form.formState.errors.selectedEvents.message}
-                                                        </p>
-                                                      )}
-                                                    </div>
-                                                  )}
+                            />
+                            <label htmlFor={event.id}>
+                              {event.name} (Requires {event.maxParticipants}{" "}
+                              {event.maxParticipants === 1 ? "participant" : "participants"})
+                            </label>
+                          </div>
+                        ))}
+                        {form.formState.errors.selectedEvents && (
+                          <p className="text-sm text-red-500">
+                            {form.formState.errors.selectedEvents.message}
+                          </p>
+                        )}
+                      </div>
+                    )}
 
-                                                  {currentStep === 3 && (
-                                                    <div className="space-y-8">
-                                                      <h2 className="font-semibold text-xl text-[#2E4A7D]">Participant Details</h2>
-                                                      {participantsByEvent.map((eventGroup) => (
-                                                        <div key={eventGroup.eventId} className="space-y-6 pb-4 border-b">
-                                                          <h3 className="font-semibold text-lg">{eventGroup.event?.name}</h3>
-                                                          <p className="text-sm text-gray-500">
-                                                            Requires {eventGroup.event?.maxParticipants}{" "}
-                                                            {eventGroup.event?.maxParticipants === 1 ? "participant" : "participants"}
-                                                          </p>
+                    {currentStep === 3 && (
+                      <div className="space-y-8">
+                        {currentStep === 3 && <h2 className="font-semibold text-xl text-[#2E4A7D]">Participant Details</h2>}
+                        {participantsByEvent.map((eventGroup) => (
+                          <div key={eventGroup.eventId} className="space-y-6 pb-4 border-b">
+                            <h3 className="font-semibold text-lg">{eventGroup.event?.name}</h3>
+                            <p className="text-sm text-gray-500">
+                              Requires {eventGroup.event?.maxParticipants}{" "}
+                              {eventGroup.event?.maxParticipants === 1 ? "participant" : "participants"}
+                            </p>
 
-                                                          {eventGroup.participants.map((participant, pIndex) => {
-                                                            // Find the overall index in the full participants array
-                                                            const globalIndex = participants.findIndex(
-                                                              p => p.eventId === participant.eventId && 
-                                                              p === participant
-                                                            );
+                            {eventGroup.participants.map((participant, pIndex) => {
+                              // Find the overall index in the full participants array
+                              const globalIndex = participants.findIndex(
+                                p => p.eventId === participant.eventId && 
+                                p === participant
+                              );
 
-                                                            return (
-                                                              <div key={pIndex} className="space-y-4 p-4 bg-gray-50 rounded-md">
-                                                                <h4 className="font-medium">
-                                                                  Participant {pIndex + 1}
-                                                                </h4>
-                                                                <div className="grid grid-cols-2 gap-4">
-                                                                  <Input
-                                                                    placeholder="Name"
-                                                                    value={participant.name}
-                                                                    onChange={(e) => updateParticipant(globalIndex, 'name', e.target.value)}
-                                                                  />
-                                                                  <Input
-                                                                    placeholder="Grade (6-12)"
-                                                                    value={participant.grade}
-                                                                    onChange={(e) => updateParticipant(globalIndex, 'grade', e.target.value)}
-                                                                  />
-                                                                </div>
-                                                              </div>
-                                                            );
-                                                          })}
-                                                        </div>
-                                                      ))}
-
-                                                      {selectedEvents.length === 0 && (
-                                                        <p className="text-center text-gray-500">
-                                                          Please go back and select at least one event.
-                                                        </p>
-                                                      )}
-                                                    </div>
-                                                  )}
-                                                </motion.div>
-                                              </AnimatePresence>
-
-                                              <div className="flex justify-between pt-6">
-                                                {currentStep > 0 && (
-                                                  <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    onClick={() => setCurrentStep((prev) => prev - 1)}
-                                                  >
-                                                    Previous
-                                                  </Button>
-                                                )}
-                                                {currentStep < formSteps.length - 1 ? (
-                                                  <Button
-                                                    type="button"
-                                                    className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white ml-auto"
-                                                    onClick={handleNext}
-                                                  >
-                                                    Next
-                                                  </Button>
-                                                ) : (
-                <Button
-                  type="button" // Changed from type="submit"
-                  className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white ml-auto"
-                  disabled={isSubmitting}
-                  onClick={async () => {
-                    const isValid = await validateStep();
-                    if (isValid) {
-                      form.handleSubmit(onSubmit)();
-                    }
-                  }}
-                >
-                  {isSubmitting ? "Submitting..." : "Submit Registration"}
-                </Button>
-                                                )}
-                                              </div>
-                                            </form>
-                                          </Form>
-                                        </CardContent>
-                                      </Card>
-                                    </div>
+                              return (
+                                <div key={pIndex} className="space-y-4 p-4 bg-gray-50 rounded-md">
+                                  <h4 className="font-medium">
+                                    Participant {pIndex + 1}
+                                  </h4>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <Input
+                                      placeholder="Name"
+                                      value={participant.name}
+                                      onChange={(e) => updateParticipant(globalIndex, 'name', e.target.value)}
+                                    />
+                                    <Input
+                                      placeholder="Grade (6-12)"
+                                      value={participant.grade}
+                                      onChange={(e) => updateParticipant(globalIndex, 'grade', e.target.value)}
+                                    />
                                   </div>
-                                );
-                              };
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ))}
 
-                              export default Register;
+                        {selectedEvents.length === 0 && (
+                          <p className="text-center text-gray-500">
+                            Please go back and select at least one event.
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+
+                <div className="flex justify-between pt-6">
+                  {currentStep > 0 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setCurrentStep((prev) => prev - 1)}
+                    >
+                      Previous
+                    </Button>
+                  )}
+                  {currentStep < formSteps.length - 1 ? (
+                    <Button
+                      type="button"
+                      className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white ml-auto"
+                      onClick={handleNext}
+                    >
+                      Next
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button" // Changed from type="submit"
+                      className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white ml-auto"
+                      disabled={isSubmitting}
+                      onClick={async () => {
+                        const isValid = await validateStep();
+                        if (isValid) {
+                          form.handleSubmit(onSubmit)();
+                        }
+                      }}
+                    >
+                      {isSubmitting ? "Submitting..." : "Submit Registration"}
+                    </Button>
+                  )}
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default Register;
