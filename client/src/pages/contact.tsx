@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,27 @@ const Contact = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [pageLoaded, setPageLoaded] = useState(false);
   const { toast } = useToast();
+
+  // Effect to track when map is loaded before showing the page
+  useEffect(() => {
+    setPageLoaded(false); // Ensure page starts as not loaded
+    
+    // We'll handle page display after component mounts
+    const handleLoad = () => {
+      setPageLoaded(true);
+    };
+    
+    // Set small timeout to ensure the map starts loading first
+    setTimeout(() => {
+      window.addEventListener('load', handleLoad);
+    }, 100);
+    
+    return () => {
+      window.removeEventListener('load', handleLoad);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +49,12 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F4F4] py-20">
+    <motion.div 
+      className="min-h-screen bg-[#F4F4F4] py-20"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: pageLoaded ? 1 : 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="container mx-auto px-4">
         <h1 className="text-5xl font-bold mb-12 text-center" style={{ fontFamily: "Noe Display" }}>
           Contact Us
@@ -83,43 +108,49 @@ const Contact = () => {
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
                     <Mail className="w-5 h-5 text-[#2E4A7D]" />
-                    <a href="mailto:contact@meraki2025.com" className="hover:text-[#2E4A7D]">
-                      contact@meraki2025.com
+                    <a href="mailto:meraki@jaipuria.com" className="hover:text-[#2E4A7D]">
+                      meraki@jaipuria.com
                     </a>
                   </div>
                   <div className="flex items-center gap-3">
                     <Phone className="w-5 h-5 text-[#2E4A7D]" />
-                    <a href="tel:+919876543210" className="hover:text-[#2E4A7D]">
-                      +91 98765 43210
+                    <a href="tel:+918887787985" className="hover:text-[#2E4A7D]">
+                      +91 88877 87985
                     </a>
                   </div>
                   <div className="flex items-center gap-3">
                     <MapPin className="w-5 h-5 text-[#2E4A7D]" />
                     <address className="not-italic">
-                      123 Event Avenue, Literary Lane
+                      Seth M.R. Jaipuria School, Vineet Khand, Gomti Nagar
                       <br />
-                      New Delhi, India 110001
+                      Lucknow, India 226010
                     </address>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <div className="h-[400px] rounded-lg overflow-hidden">
+            <div className="h-[400px] rounded-lg overflow-hidden relative">
               <iframe
                 src="https://www.google.com/maps/embed/v1/place?key=AIzaSyB2NIWI3Tv9iDPrlnowr_0ZqZWoAQydKJU&q=Seth%20M.%20R.%20Jaipuria%20School%2C%20Vineet%20Khand%2C%20Gomti%20Nagar%2C%20Lucknow%2C%20Uttar%20Pradesh%2C%20India&zoom=16&maptype=roadmap"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
                 allowFullScreen
-                loading="lazy"
+                loading="eager" // Changed to eager to ensure it loads first
                 referrerPolicy="no-referrer-when-downgrade"
+                onLoad={() => setPageLoaded(true)} // This triggers when the map finishes loading
               />
+              {!pageLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2E4A7D]"></div>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
