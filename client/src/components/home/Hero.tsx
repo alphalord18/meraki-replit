@@ -75,8 +75,8 @@ const AutoScrollText = () => {
 const Hero = () => {
   return (
     <div className="relative min-h-screen flex items-center overflow-hidden">
-      {/* Video Background */}
-      <div className="absolute inset-0 z-0">
+      {/* Video Background - z-index adjusted to ensure it doesn't interfere with navigation */}
+      <div className="absolute inset-0" style={{ zIndex: 0 }}>
         <video 
           className="w-full h-full object-cover"
           autoPlay
@@ -87,12 +87,12 @@ const Hero = () => {
           <source src="https://videos.pexels.com/video-files/8244322/uhd_25fps.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
-        {/* Overlay to ensure text readability */}
-        <div className="absolute inset-0 bg-black/60 z-1"></div>
+        {/* Overlay with z-index adjusted */}
+        <div className="absolute inset-0 bg-black/60" style={{ zIndex: 1 }}></div>
       </div>
 
-      {/* Content */}
-      <div className="container mx-auto px-4 relative z-20">
+      {/* Content - z-index increased to ensure it's above the background but below navigation */}
+      <div className="container mx-auto px-4 relative" style={{ zIndex: 10 }}>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
