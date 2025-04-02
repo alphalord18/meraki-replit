@@ -27,7 +27,7 @@ function Router() {
           <Route path="/sponsors" component={Sponsors} />
           <Route path="/register" component={Register} />
           <Route path="/contact" component={Contact} />
-          <Route path="*" component={NotFound} />
+          <Route component={NotFound} />
         </Switch>
       </main>
       <Footer />
