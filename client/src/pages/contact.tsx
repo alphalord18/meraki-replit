@@ -14,24 +14,6 @@ const Contact = () => {
   const [pageLoaded, setPageLoaded] = useState(false);
   const { toast } = useToast();
 
-  // Effect to track when map is loaded before showing the page
-  useEffect(() => {
-    setPageLoaded(false); // Ensure page starts as not loaded
-    
-    // We'll handle page display after component mounts
-    const handleLoad = () => {
-      setPageLoaded(true);
-    };
-    
-    // Set small timeout to ensure the map starts loading first
-    setTimeout(() => {
-      window.addEventListener('load', handleLoad);
-    }, 100);
-    
-    return () => {
-      window.removeEventListener('load', handleLoad);
-    };
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
