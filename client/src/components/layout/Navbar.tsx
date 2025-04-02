@@ -108,22 +108,22 @@ const Navbar = () => {
 
         {/* Mobile Navigation - compact with auto height */}
         {isMenuOpen && (
-         <div className="absolute top-16 left-0 right-0 bg-background border-b shadow-lg z-40 md:hidden flex justify-center px-6 py-4">
-            <nav className="container mx-auto px-4 py-4 flex flex-col gap-2">
+         <div className="absolute top-16 left-0 right-0 bg-background border-b shadow-lg z-40 md:hidden">
+            <nav className="container mx-auto px-4 py-4 flex flex-col items-center gap-4">
               <Link href="/events">
-                <a className="text-lg py-2 hover:text-[#FFC857]">Events</a>
+                <a className="text-lg py-2 text-center w-full hover:text-[#FFC857]">Events</a>
               </Link>
               <Link href="/speakers">
-                <a className="text-lg py-2 hover:text-[#FFC857]">Speakers</a>
+                <a className="text-lg py-2 text-center w-full hover:text-[#FFC857]">Speakers</a>
               </Link>
               <Link href="/blog">
-                <a className="text-lg py-2 hover:text-[#FFC857]">Blog</a>
+                <a className="text-lg py-2 text-center w-full hover:text-[#FFC857]">Blog</a>
               </Link>
               <Link href="/sponsors">
-                <a className="text-lg py-2 hover:text-[#FFC857]">Sponsors</a>
+                <a className="text-lg py-2 text-center w-full hover:text-[#FFC857]">Sponsors</a>
               </Link>
               <Link href="/contact">
-                <a className="text-lg py-2 hover:text-[#FFC857]">Contact</a>
+                <a className="text-lg py-2 text-center w-full hover:text-[#FFC857]">Contact</a>
               </Link>
               <Button 
                 asChild 
