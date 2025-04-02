@@ -33,9 +33,6 @@ const Contact = () => {
   return (
     <motion.div 
       className="min-h-screen bg-[#F4F4F4] py-20"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: pageLoaded ? 1 : 0 }}
-      transition={{ duration: 0.5 }}
     >
       <div className="container mx-auto px-4">
         <h1 className="text-5xl font-bold mb-12 text-center" style={{ fontFamily: "Noe Display" }}>
