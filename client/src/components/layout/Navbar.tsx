@@ -59,10 +59,10 @@ const Navbar = () => {
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
 
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-4">
-          <NavigationMenu>
-            <NavigationMenuList>
+        {/* Desktop Navigation - Center aligned with proper spacing */}
+        <div className="hidden md:flex items-center justify-center flex-1 mx-4">
+          <NavigationMenu className="mx-auto">
+            <NavigationMenuList className="flex justify-center gap-6">
               <NavigationMenuItem>
                 <Link href="/events">
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
@@ -100,7 +100,10 @@ const Navbar = () => {
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
+        </div>
 
+        {/* Register button */}
+        <div className="hidden md:block">
           <Button asChild className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white">
             <Link href="/register">Register Now</Link>
           </Button>
