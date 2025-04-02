@@ -106,28 +106,28 @@ const Navbar = () => {
           </Button>
         </div>
 
-        {/* Mobile Navigation - improved positioning and z-index */}
+        {/* Mobile Navigation - compact with auto height */}
         {isMenuOpen && (
-          <div className="fixed top-16 left-0 right-0 bottom-0 bg-background z-40 md:hidden">
-            <nav className="container mx-auto px-4 py-4 flex flex-col gap-4">
+          <div className="absolute top-16 left-0 right-0 bg-background border-b shadow-lg z-40 md:hidden">
+            <nav className="container mx-auto px-4 py-4 flex flex-col gap-2">
               <Link href="/events">
-                <a className="text-lg py-2 border-b border-gray-100">Events</a>
+                <a className="text-lg py-2 hover:text-[#FFC857]">Events</a>
               </Link>
               <Link href="/speakers">
-                <a className="text-lg py-2 border-b border-gray-100">Speakers</a>
+                <a className="text-lg py-2 hover:text-[#FFC857]">Speakers</a>
               </Link>
               <Link href="/blog">
-                <a className="text-lg py-2 border-b border-gray-100">Blog</a>
+                <a className="text-lg py-2 hover:text-[#FFC857]">Blog</a>
               </Link>
               <Link href="/sponsors">
-                <a className="text-lg py-2 border-b border-gray-100">Sponsors</a>
+                <a className="text-lg py-2 hover:text-[#FFC857]">Sponsors</a>
               </Link>
               <Link href="/contact">
-                <a className="text-lg py-2 border-b border-gray-100">Contact</a>
+                <a className="text-lg py-2 hover:text-[#FFC857]">Contact</a>
               </Link>
               <Button 
                 asChild 
-                className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white w-full mt-4"
+                className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white w-full mt-2"
               >
                 <Link href="/register">Register Now</Link>
               </Button>
