@@ -59,10 +59,10 @@ const Navbar = () => {
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
 
-        {/* Desktop Navigation - Center aligned with proper spacing */}
-        <div className="hidden md:flex items-center justify-center flex-1 mx-4">
-          <NavigationMenu className="mx-auto">
-            <NavigationMenuList className="flex justify-center gap-6">
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center gap-4">
+          <NavigationMenu>
+            <NavigationMenuList>
               <NavigationMenuItem>
                 <Link href="/events">
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
@@ -100,10 +100,7 @@ const Navbar = () => {
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
-        </div>
 
-        {/* Register button */}
-        <div className="hidden md:block">
           <Button asChild className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white">
             <Link href="/register">Register Now</Link>
           </Button>
@@ -111,7 +108,7 @@ const Navbar = () => {
 
         {/* Mobile Navigation - compact with auto height */}
         {isMenuOpen && (
-          <div className="absolute top-16 left-0 right-0 bg-background border-b shadow-lg z-40 md:hidden">
+         <div className="absolute top-16 left-0 right-0 bg-background border-b shadow-lg z-40 md:hidden flex justify-center px-6 py-4">
             <nav className="container mx-auto px-4 py-4 flex flex-col gap-2">
               <Link href="/events">
                 <a className="text-lg py-2 hover:text-[#FFC857]">Events</a>
