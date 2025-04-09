@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Phone, MapPin } from "lucide-react";
-import nodemailer from 'nodemailer';
 
 const Contact = () => {
   const [name, setName] = useState("");
@@ -16,56 +15,44 @@ const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
     try {
-      // Email configuration using nodemailer
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: 'aaravgarg1812@gmail.com',
-          pass: process.env.NEXT_PUBLIC_EMAIL_APP_PASSWORD // Using environment variable for security
-        }
+      // Send data to our API route
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          message,
+        }),
       });
       
-      // Email content
-      const mailOptions = {
-        from: 'aaravgarg1812@gmail.com',
-        to: 'aaravgarg1812@gmail.com',
-        subject: `New Contact Form Submission from ${name}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; padding: 20px;">
-            <h2>New Contact Form Submission</h2>
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Message:</strong></p>
-            <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px;">
-              ${message.replace(/\n/g, '<br>')}
-            </div>
-          </div>
-        `
-      };
+      const data = await response.json();
       
-      // Send the email
-      await transporter.sendMail(mailOptions);
-      
-      toast({
-        title: "Message sent",
-        description: "We'll get back to you soon!",
-      });
-
-      // Reset form
-      setName("");
-      setEmail("");
-      setMessage("");
+      if (response.ok) {
+        toast({
+          title: "Message sent",
+          description: "We'll get back to you soon!",
+        });
+        
+        // Reset form
+        setName("");
+        setEmail("");
+        setMessage("");
+      } else {
+        throw new Error(data.message || "Failed to send message");
+      }
     } catch (error) {
-      console.error("Error sending email:", error);
       toast({
-        title: "Error sending message",
-        description: "Please try again later.",
-        variant: "destructive"
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to send message",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
