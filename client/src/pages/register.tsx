@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import type { 
@@ -88,6 +89,10 @@ const participantSchema = z.object({
     .number()
     .int()
     .positive("Please select an event"),
+  category_id: z
+    .number()
+    .int()
+    .positive("Please select a category"),
   slot: z
     .number()
     .int()
@@ -116,7 +121,11 @@ const formSteps = [
     ] as const,
   },
   {
-    title: "Event Registration",
+    title: "Events Selection",
+    fields: ["selectedEvents"] as const,
+  },
+  {
+    title: "Participants Details",
     fields: ["participants"] as const,
   },
 ];
@@ -134,7 +143,7 @@ const Register = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [events, setEvents] = useState<EventWithCategories[]>([]);
   const [categories, setCategories] = useState<EventCategory[]>([]);
-  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+  const [selectedEventIds, setSelectedEventIds] = useState<number[]>([]);
   const [participants, setParticipants] = useState<ParticipantFormData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -238,6 +247,7 @@ const Register = () => {
       const participantsToInsert = formData.participants.map(participant => ({
         school_id,
         event_id: participant.event_id,
+        category_id: participant.category_id,
         participant_name: participant.participant_name,
         class: participant.class,
         slot: participant.slot
@@ -257,7 +267,7 @@ const Register = () => {
 
       form.reset();
       setParticipants([]);
-      setSelectedEventId(null);
+      setSelectedEventIds([]);
       setCurrentStep(0);
     } catch (error: any) {
       console.error("Registration error:", error);
@@ -271,44 +281,110 @@ const Register = () => {
     }
   };
 
-  const handleEventChange = (eventId: string) => {
-    const eventIdNumber = parseInt(eventId, 10);
-    setSelectedEventId(eventIdNumber);
+  const toggleEventSelection = (eventId: number) => {
+    setSelectedEventIds(prev => {
+      if (prev.includes(eventId)) {
+        // Remove event and its participants
+        setParticipants(prevParticipants => 
+          prevParticipants.filter(p => p.event_id !== eventId)
+        );
+        return prev.filter(id => id !== eventId);
+      } else {
+        // Add event
+        return [...prev, eventId];
+      }
+    });
+  };
 
-    // Find the selected event
-    const selectedEvent = events.find(event => event.event_id === eventIdNumber);
-    if (!selectedEvent) return;
+  const addParticipantForEvent = (eventId: number, categoryId: number) => {
+    const event = events.find(e => e.event_id === eventId);
+    if (!event) return;
 
-    // Get max participants for this event
-    const maxParticipants = selectedEvent.categories.reduce((max, link) => {
-      return Math.max(max, link.max_participants);
-    }, 0);
+    // Find the selected category
+    const eventCategoryLink = event.categories.find(link => 
+      link.category_id === categoryId
+    );
+    
+    if (!eventCategoryLink) return;
 
-    // Reset participants for this event
-    const newParticipants = Array(maxParticipants)
-      .fill(null)
-      .map((_, index) => ({
-        event_id: eventIdNumber,
-        participant_name: "",
-        class: 6, // Default class
-        slot: index + 1
-      }));
+    // Find existing participants for this event and category
+    const existingParticipantsForEventCategory = participants.filter(p => 
+      p.event_id === eventId && p.category_id === categoryId
+    );
 
-    setParticipants(newParticipants);
-    form.setValue('participants', newParticipants);
+    // Check if we've reached max participants for this category
+    if (existingParticipantsForEventCategory.length >= eventCategoryLink.max_participants) {
+      toast({
+        variant: "destructive",
+        title: "Maximum Participants Reached",
+        description: `You can only add up to ${eventCategoryLink.max_participants} participants for this event category.`,
+      });
+      return;
+    }
+
+    // Get category details for class validation
+    const category = event.categoryDetails?.find(cat => cat.category_id === categoryId);
+
+    // Get the next slot number
+    const nextSlot = existingParticipantsForEventCategory.length + 1;
+
+    // Add a new participant
+    const newParticipant: ParticipantFormData = {
+      event_id: eventId,
+      category_id: categoryId,
+      participant_name: "",
+      class: category ? category.min_class : 6, // Default to minimum class if category is found
+      slot: nextSlot
+    };
+
+    setParticipants(prev => [...prev, newParticipant]);
+    
+    // Update form value
+    const updatedParticipants = [...participants, newParticipant];
+    form.setValue("participants", updatedParticipants);
   };
 
   const updateParticipant = (index: number, field: keyof ParticipantFormData, value: any) => {
     const newParticipants = [...participants];
     newParticipants[index] = { 
       ...newParticipants[index], 
-      [field]: field === 'event_id' || field === 'class' || field === 'slot' 
+      [field]: field === 'event_id' || field === 'category_id' || field === 'class' || field === 'slot' 
         ? parseInt(value, 10) 
         : value 
     };
     
     setParticipants(newParticipants);
     form.setValue("participants", newParticipants);
+  };
+
+  const removeParticipant = (index: number) => {
+    const newParticipants = [...participants];
+    newParticipants.splice(index, 1);
+    
+    // Renumber slots for remaining participants with the same event_id and category_id
+    const removedParticipant = participants[index];
+    
+    const updatedParticipants = newParticipants.map((p, i) => {
+      if (p.event_id === removedParticipant.event_id && 
+          p.category_id === removedParticipant.category_id) {
+        // Count how many participants of this event/category come before this one
+        const precedingCount = newParticipants
+          .filter((p2, i2) => 
+            i2 < i && 
+            p2.event_id === removedParticipant.event_id && 
+            p2.category_id === removedParticipant.category_id
+          ).length;
+        
+        return {
+          ...p,
+          slot: precedingCount + 1
+        };
+      }
+      return p;
+    });
+    
+    setParticipants(updatedParticipants);
+    form.setValue("participants", updatedParticipants);
   };
 
   const validateStep = async () => {
@@ -322,11 +398,21 @@ const Register = () => {
           "school.coordinator_phone",
         ]);
       case 2:
+        if (selectedEventIds.length === 0) {
+          toast({
+            variant: "destructive",
+            title: "Events Required",
+            description: "Please select at least one event.",
+          });
+          return false;
+        }
+        return true;
+      case 3:
         if (participants.length === 0) {
           toast({
             variant: "destructive",
             title: "Participants Required",
-            description: "Please select an event and add participants.",
+            description: "Please add at least one participant.",
           });
           return false;
         }
@@ -346,6 +432,20 @@ const Register = () => {
   const handlePrevious = () => {
     setCurrentStep((prev) => Math.max(0, prev - 1));
   };
+
+  // Group participants by event and category for better organization
+  const groupedParticipants = participants.reduce((groups, participant) => {
+    const key = `${participant.event_id}-${participant.category_id}`;
+    if (!groups[key]) {
+      groups[key] = {
+        event: events.find(e => e.event_id === participant.event_id),
+        category: categories.find(c => c.category_id === participant.category_id),
+        participants: []
+      };
+    }
+    groups[key].participants.push(participant);
+    return groups;
+  }, {} as Record<string, { event: EventWithCategories | undefined, category: EventCategory | undefined, participants: ParticipantFormData[] }>);
 
   return (
     <div className="min-h-screen bg-[#F4F4F4] py-20">
@@ -482,89 +582,198 @@ const Register = () => {
                       )}
 
                       {currentStep === 2 && (
-                        <div className="space-y-4">
-                          <h2 className="font-semibold text-xl text-[#2E4A7D]">Event & Participant Registration</h2>
+                        <div className="space-y-6">
+                          <h2 className="font-semibold text-xl text-[#2E4A7D]">Select Events</h2>
+                          <p className="text-sm text-gray-600 mb-4">
+                            Choose one or more events for your school to participate in.
+                          </p>
                           
-                          {/* Event Selection */}
-                          <div className="mb-6">
-                            <FormLabel>Select Event</FormLabel>
-                            <Select
-                              value={selectedEventId?.toString() || ""}
-                              onValueChange={handleEventChange}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select an event" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {events.map((event) => (
-                                  <SelectItem key={event.event_id} value={event.event_id.toString()}>
+                          <div className="space-y-4">
+                            {events.map((event) => (
+                              <div key={event.event_id} className="border p-4 rounded-md">
+                                <div className="flex items-center space-x-3 mb-3">
+                                  <Checkbox 
+                                    id={`event-${event.event_id}`}
+                                    checked={selectedEventIds.includes(event.event_id)} 
+                                    onCheckedChange={() => toggleEventSelection(event.event_id)}
+                                  />
+                                  <label 
+                                    htmlFor={`event-${event.event_id}`}
+                                    className="font-medium cursor-pointer"
+                                  >
                                     {event.event_name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          {/* Display event categories if an event is selected */}
-                          {selectedEventId && (
-                            <div className="mb-4 p-3 bg-gray-50 rounded-md">
-                              <h3 className="font-medium text-sm mb-2">Event Categories:</h3>
-                              <ul className="text-sm text-gray-600">
-                                {events
-                                  .find(e => e.event_id === selectedEventId)
-                                  ?.categoryDetails
-                                  ?.map((cat, idx) => (
-                                    <li key={idx}>• {cat.category_name} (Classes {cat.min_class}-{cat.max_class})</li>
-                                  ))}
-                              </ul>
-                            </div>
-                          )}
-
-                          {/* Participant Details */}
-                          {selectedEventId && participants.length > 0 && (
-                            <div className="space-y-4">
-                              <h3 className="font-medium text-lg">
-                                Participant Details
-                              </h3>
-                              {participants.map((participant, index) => (
-                                <div key={index} className="border p-4 rounded-md">
-                                  <h4 className="text-sm font-medium mb-2">Participant {index + 1}</h4>
-                                  <div className="grid grid-cols-1 gap-4">
-                                    <div>
-                                      <FormLabel>Name</FormLabel>
-                                      <Input
-                                        value={participant.participant_name}
-                                        onChange={(e) =>
-                                          updateParticipant(index, "participant_name", e.target.value)
-                                        }
-                                      />
-                                      {form.formState.errors.participants?.[index]?.participant_name && (
-                                        <p className="text-red-500 text-sm mt-1">
-                                          {String(form.formState.errors.participants?.[index]?.participant_name?.message || "")}
-                                        </p>
-                                      )}
-                                    </div>
-                                    <div>
-                                      <FormLabel>Class (1-12)</FormLabel>
-                                      <Input
-                                        type="number"
-                                        min={1}
-                                        max={12}
-                                        value={participant.class || ""}
-                                        onChange={(e) =>
-                                          updateParticipant(index, "class", e.target.value)
-                                        }
-                                      />
-                                      {form.formState.errors.participants?.[index]?.class && (
-                                        <p className="text-red-500 text-sm mt-1">
-                                          {String(form.formState.errors.participants?.[index]?.class?.message || "")}
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
+                                  </label>
                                 </div>
-                              ))}
-                            </div>
+                                
+                                {event.categoryDetails && (
+                                  <div className="ml-7 text-sm text-gray-600">
+                                    <p className="mb-1">Available Categories:</p>
+                                    <ul className="list-disc ml-5 space-y-1">
+                                      {event.categoryDetails.map((category) => (
+                                        <li key={category.category_id}>
+                                          {category.category_name} (Classes {category.min_class}-{category.max_class})
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {currentStep === 3 && (
+                        <div className="space-y-6">
+                          <h2 className="font-semibold text-xl text-[#2E4A7D]">Participant Details</h2>
+                          
+                          {selectedEventIds.length === 0 ? (
+                            <p className="text-yellow-600">Please go back and select events first.</p>
+                          ) : (
+                            <>
+                              {selectedEventIds.map((eventId) => {
+                                const event = events.find(e => e.event_id === eventId);
+                                if (!event) return null;
+                                
+                                return (
+                                  <div key={eventId} className="border p-5 rounded-lg space-y-4 bg-gray-50">
+                                    <h3 className="font-semibold text-lg text-[#2E4A7D]">{event.event_name}</h3>
+                                    
+                                    {/* Category selection */}
+                                    <div className="bg-white p-4 rounded-md shadow-sm">
+                                      <h4 className="font-medium text-sm mb-3">Add participants:</h4>
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {event.categoryDetails?.map((category) => (
+                                          <div key={category.category_id} className="border p-3 rounded">
+                                            <div className="flex items-center justify-between mb-2">
+                                              <span className="font-medium text-sm">
+                                                {category.category_name}
+                                              </span>
+                                              <span className="text-xs text-gray-500">
+                                                Classes {category.min_class}-{category.max_class}
+                                              </span>
+                                            </div>
+                                            
+                                            <Button
+                                              type="button"
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => addParticipantForEvent(eventId, category.category_id)}
+                                              className="w-full mt-1"
+                                            >
+                                              Add Participant
+                                            </Button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Display participants grouped by category */}
+                                    {event.categoryDetails?.map(category => {
+                                      const key = `${eventId}-${category.category_id}`;
+                                      const group = groupedParticipants[key];
+                                      
+                                      if (!group || group.participants.length === 0) return null;
+                                      
+                                      return (
+                                        <div key={key} className="mt-4">
+                                          <h4 className="font-medium text-md mb-3 bg-white p-2 rounded">
+                                            {category.category_name} Participants
+                                          </h4>
+                                          
+                                          <div className="space-y-4">
+                                            {group.participants.map((participant, pIndex) => {
+                                              // Find index in the overall participants array
+                                              const globalIndex = participants.findIndex(p => 
+                                                p.event_id === participant.event_id && 
+                                                p.category_id === participant.category_id && 
+                                                p.slot === participant.slot
+                                              );
+                                              
+                                              if (globalIndex === -1) return null;
+                                              
+                                              return (
+                                                <div key={pIndex} className="bg-white p-4 rounded-md shadow-sm border">
+                                                  <div className="flex justify-between items-center mb-3">
+                                                    <h5 className="font-medium">Participant {participant.slot}</h5>
+                                                    <Button
+                                                      type="button"
+                                                      variant="outline"
+                                                      size="sm"
+                                                      onClick={() => removeParticipant(globalIndex)}
+                                                      className="text-red-500 h-8"
+                                                    >
+                                                      Remove
+                                                    </Button>
+                                                  </div>
+                                                  
+                                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                      <FormLabel>Name</FormLabel>
+                                                      <Input
+                                                        value={participant.participant_name}
+                                                        onChange={(e) =>
+                                                          updateParticipant(globalIndex, "participant_name", e.target.value)
+                                                        }
+                                                        className="mt-1"
+                                                      />
+                                                      {form.formState.errors.participants?.[globalIndex]?.participant_name && (
+                                                        <p className="text-red-500 text-sm mt-1">
+                                                          {String(form.formState.errors.participants?.[globalIndex]?.participant_name?.message || "")}
+                                                        </p>
+                                                      )}
+                                                    </div>
+                                                    <div>
+                                                      <FormLabel>Class</FormLabel>
+                                                      <Select
+                                                        value={participant.class.toString()}
+                                                        onValueChange={(value) =>
+                                                          updateParticipant(globalIndex, "class", value)
+                                                        }
+                                                      >
+                                                        <SelectTrigger>
+                                                          <SelectValue placeholder="Select class" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                          {Array.from(
+                                                            { length: category.max_class - category.min_class + 1 },
+                                                            (_, i) => category.min_class + i
+                                                          ).map((classNum) => (
+                                                            <SelectItem
+                                                              key={classNum}
+                                                              value={classNum.toString()}
+                                                            >
+                                                              Class {classNum}
+                                                            </SelectItem>
+                                                          ))}
+                                                        </SelectContent>
+                                                      </Select>
+                                                      {form.formState.errors.participants?.[globalIndex]?.class && (
+                                                        <p className="text-red-500 text-sm mt-1">
+                                                          {String(form.formState.errors.participants?.[globalIndex]?.class?.message || "")}
+                                                        </p>
+                                                      )}
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              })}
+                              
+                              {participants.length === 0 && (
+                                <div className="bg-yellow-50 p-4 rounded-md text-center">
+                                  <p className="text-yellow-700">
+                                    Please add at least one participant from any of the selected events and categories.
+                                  </p>
+                                </div>
+                              )}
+                            </>
                           )}
                         </div>
                       )}
@@ -594,7 +803,7 @@ const Register = () => {
                       <Button
                         type="submit"
                         className="ml-auto"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || participants.length === 0}
                       >
                         {isSubmitting ? "Submitting..." : "Submit Registration"}
                       </Button>

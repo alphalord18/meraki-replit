@@ -42,6 +42,7 @@ export interface EventWithCategories extends Event {
 
 export interface ParticipantFormData {
   event_id: number;
+  category_id: number;
   participant_name: string;
   class: number;
   slot: number;
