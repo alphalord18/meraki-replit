@@ -329,12 +329,12 @@ const Register = () => {
     // Get the next slot number
     const nextSlot = existingParticipantsForEventCategory.length + 1;
 
-    // Add a new participant
+    // Add a new participant - class left empty (0) for user selection
     const newParticipant: ParticipantFormData = {
       event_id: eventId,
       category_id: categoryId,
       participant_name: "",
-      class: category.min_class,
+      class: 0, // Default to empty/0 so user must select a class
       slot: nextSlot
     };
 
@@ -361,8 +361,10 @@ const Register = () => {
     const category = event.categoryDetails?.find(cat => cat.category_id === categoryId);
     if (!category) return;
 
-    // Get min participants needed (always at least 1)
-    const minParticipants = Math.min(eventCategoryLink.max_participants, 1);
+    // Get minimum participants needed - always require at least 1 participant
+    // For this implementation, we'll use max_participants as our minimum requirement
+    // as there's no min_participants field in the schema
+    const minParticipants = Math.max(1, eventCategoryLink.max_participants);
     
     // Check if we already have participants for this event/category
     const existingParticipantsCount = participants.filter(p => 
@@ -371,12 +373,12 @@ const Register = () => {
     
     if (existingParticipantsCount > 0) return; // Already initialized
     
-    // Create new participants
+    // Create new participants - classes will be left empty for user selection
     const newParticipants = Array.from({ length: minParticipants }).map((_, index) => ({
       event_id: eventId,
       category_id: categoryId,
       participant_name: "",
-      class: category.min_class,
+      class: 0, // Default to empty/0 so user must select a class
       slot: index + 1
     }));
     
