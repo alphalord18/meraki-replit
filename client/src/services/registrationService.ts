@@ -49,9 +49,9 @@ export const fetchEventCategories = async (): Promise<EventCategory[]> => {
 export const fetchEventCategoryLinks = async (eventId?: number): Promise<EventCategoryLink[]> => {
   try {
     let query = supabase
-      .from('event_category_link')
+      .from('event_category_mapping') // Corrected table name
       .select('*');
-    
+
     if (eventId) {
       query = query.eq('event_id', eventId);
     }
@@ -71,29 +71,29 @@ export const fetchEventsWithCategories = async (): Promise<EventWithCategories[]
   try {
     // Fetch all events
     const events = await fetchEvents();
-    
+
     // Fetch all category links
     const allCategoryLinks = await fetchEventCategoryLinks();
-    
+
     // Fetch all categories for detailed info
     const allCategories = await fetchEventCategories();
-    
+
     // Map events with their categories
     const eventsWithCategories = events.map(event => {
       const categories = allCategoryLinks.filter(link => link.event_id === event.event_id);
-      
+
       // Attach category details to each event
       const categoryDetails = categories.map(category => {
         return allCategories.find(cat => cat.category_id === category.category_id);
       }).filter(Boolean) as EventCategory[];
-      
+
       return {
         ...event,
         categories,
         categoryDetails
       };
     });
-    
+
     return eventsWithCategories;
   } catch (error) {
     console.error('Error fetching events with categories:', error);
@@ -139,7 +139,7 @@ export const registerParticipants = async (participants: Omit<Participant, 's_no
 // Full registration process
 export const completeRegistration = async (
   schoolData: Omit<School, 'school_id'>, 
-  participants: Omit<Participant, 'school_id' | 's_no'>[]
+  participants: Omit<Participant, 'school_id' | 's_no' | 'category_id'>[] // Added category_id
 ): Promise<{ school: School, participants: Participant[] }> => {
   try {
     // First register the school

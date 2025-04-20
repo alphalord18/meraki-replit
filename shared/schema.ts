@@ -60,23 +60,23 @@ export const schools = pgTable("schools", {
   coordinator_phone: text("coordinator_phone").notNull(),
 });
 
-export const festival_events = pgTable("festival_events", {
+export const events = pgTable("events", {
   event_id: serial("event_id").primaryKey(),
-  event_name: text("event_name").notNull(),
+  event_name: varchar("event_name", { length: 100 }).notNull(),
 });
 
 export const event_categories = pgTable("event_categories", {
   category_id: serial("category_id").primaryKey(),
-  category_name: text("category_name").notNull(),
-  min_class: integer("min_class").notNull(),
-  max_class: integer("max_class").notNull(),
+  category_name: varchar("category_name", { length: 100 }).notNull(),
+  min_class: numeric("min_class").notNull(),
+  max_class: numeric("max_class").notNull(),
 });
 
-export const event_category_links = pgTable("event_category_links", {
+export const event_category_mapping = pgTable("event_category_mapping", {
   id: serial("id").primaryKey(),
   event_id: integer("event_id").notNull(),
   category_id: integer("category_id").notNull(),
-  max_participants: integer("max_participants").notNull(),
+  max_participants: numeric("max_participants").notNull(),
 });
 
 export const participants = pgTable("participants", {
@@ -84,9 +84,9 @@ export const participants = pgTable("participants", {
   school_id: varchar("school_id", { length: 10 }).notNull(),
   event_id: integer("event_id").notNull(),
   category_id: integer("category_id").notNull(),
-  participant_name: text("participant_name").notNull(),
-  class: integer("class").notNull(),
-  slot: integer("slot").notNull(),
+  participant_name: varchar("participant_name", { length: 100 }).notNull(),
+  class: numeric("class").notNull(),
+  slot: numeric("slot").notNull(),
 });
 
 // Insert Schemas
