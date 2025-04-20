@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -24,14 +24,9 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 
-const events = [
-  { id: "poetry_slam", name: "Poetry Slam Championship", maxParticipants: 2 },
-  { id: "debate", name: "Literary Debate Competition", maxParticipants: 2 },
-  { id: "storytelling", name: "Storytelling Contest", maxParticipants: 1 },
-];
-
-const registrationSchema = z.object({
-  schoolName: z
+// Define schemas based on the PostgreSQL database structure
+const schoolSchema = z.object({
+  school_name: z
     .string()
     .min(3, "School name must be at least 3 characters")
     .max(100, "School name must not exceed 100 characters")
@@ -40,12 +35,12 @@ const registrationSchema = z.object({
       "School name can only contain letters, numbers, spaces, and basic punctuation",
     ),
 
-  schoolAddress: z
+  address: z
     .string()
     .min(10, "Please provide a complete school address")
     .max(200, "Address must not exceed 200 characters"),
 
-  coordinatorName: z
+  coordinator_name: z
     .string()
     .min(3, "Coordinator name must be at least 3 characters")
     .max(50, "Coordinator name must not exceed 50 characters")
@@ -54,288 +49,312 @@ const registrationSchema = z.object({
       "Coordinator name can only contain letters and basic punctuation",
     ),
 
-  coordinatorEmail: z
+  coordinator_email: z
     .string()
     .email("Invalid email address")
     .refine((email) => email.includes("."), "Email must contain a domain"),
 
-  coordinatorPhone: z
+  coordinator_phone: z
     .string()
     .regex(
       /^\+?[0-9]{10,12}$/,
       "Phone number must be 10-12 digits, optionally starting with +",
     ),
+});
 
-  selectedEvents: z
-    .array(z.string())
-    .min(1, "Select at least one event")
-    .max(3, "Maximum 3 events can be selected"),
+const participantSchema = z.object({
+  participant_name: z
+    .string()
+    .min(3, "Participant name must be at least 3 characters")
+    .max(50, "Participant name must not exceed 50 characters")
+    .regex(
+      /^[a-zA-Z\s'.]+$/,
+      "Participant name can only contain letters and basic punctuation",
+    ),
+  class: z
+    .number()
+    .int()
+    .min(1, "Class must be at least 1")
+    .max(12, "Class must not exceed 12"),
+  event_id: z
+    .number()
+    .int()
+    .positive("Please select an event"),
+  slot: z
+    .number()
+    .int()
+    .min(1, "Slot number must be at least 1"),
+});
 
-  participants: z
-    .array(
-      z.object({
-        eventId: z.string(),
-        name: z
-          .string()
-          .min(3, "Participant name must be at least 3 characters")
-          .max(50, "Participant name must not exceed 50 characters")
-          .regex(
-            /^[a-zA-Z\s'.]+$/,
-            "Participant name can only contain letters and basic punctuation",
-          ),
-        grade: z
-          .string()
-          .regex(/^([6-9]|1[0-2])$/, "Grade must be between 6 and 12"),
-      }),
-    )
-    .refine((participants) => {
-      // Check if we have exact number of participants for each event
-      const eventCounts = participants.reduce(
-        (acc, p) => {
-          acc[p.eventId] = (acc[p.eventId] || 0) + 1;
-          return acc;
-        },
-        {} as Record<string, number>,
-      );
-
-      for (const eventId of Object.keys(eventCounts)) {
-        const event = events.find((e) => e.id === eventId);
-        if (!event || eventCounts[eventId] !== event.maxParticipants) {
-          return false;
-        }
-      }
-      return true;
-    }, "Please add the exact number of required participants for each event"),
+const registrationSchema = z.object({
+  school: schoolSchema,
+  participants: z.array(participantSchema)
+    .min(1, "At least one participant is required"),
 });
 
 type RegistrationData = z.infer<typeof registrationSchema>;
 
+// Types for database entities
+interface EventCategory {
+  category_id: number;
+  category_name: string;
+  min_class: number;
+  max_class: number;
+}
+
+interface Event {
+  event_id: number;
+  event_name: string;
+}
+
+interface EventCategoryLink {
+  id: number;
+  event_id: number;
+  category_id: number;
+  max_participants: number;
+}
+
+interface EventWithCategories extends Event {
+  categories: EventCategoryLink[];
+  categoryDetails?: EventCategory[];
+}
+
+interface ParticipantFormData {
+  event_id: number;
+  participant_name: string;
+  class: number;
+  slot: number;
+}
+
 const formSteps = [
   {
     title: "School Information",
-    fields: ["schoolName", "schoolAddress"] as const,
+    fields: ["school.school_name", "school.address"] as const,
   },
   {
     title: "Coordinator Details",
     fields: [
-      "coordinatorName",
-      "coordinatorEmail",
-      "coordinatorPhone",
+      "school.coordinator_name",
+      "school.coordinator_email",
+      "school.coordinator_phone",
     ] as const,
   },
   {
-    title: "Event Selection",
-    fields: ["selectedEvents"] as const,
-  },
-  {
-    title: "Participant Details",
+    title: "Event Registration",
     fields: ["participants"] as const,
   },
 ];
+
+// Generate a unique school ID
+const generateSchoolId = (): string => {
+  const randomPart = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  const timestamp = Date.now().toString().slice(-6);
+  return `SCH${timestamp}${randomPart}`;
+};
 
 const Register = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
-  const [participants, setParticipants] = useState<
-    Array<{ eventId: string; name: string; grade: string }>
-  >([]);
+  const [events, setEvents] = useState<EventWithCategories[]>([]);
+  const [categories, setCategories] = useState<EventCategory[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+  const [participants, setParticipants] = useState<ParticipantFormData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const form = useForm<RegistrationData>({
     resolver: zodResolver(registrationSchema),
     defaultValues: {
-      schoolName: "",
-      schoolAddress: "",
-      coordinatorName: "",
-      coordinatorEmail: "",
-      coordinatorPhone: "",
-      selectedEvents: [],
+      school: {
+        school_name: "",
+        address: "",
+        coordinator_name: "",
+        coordinator_email: "",
+        coordinator_phone: "",
+      },
       participants: [],
     },
   });
 
-  const onSubmit = async (formData: RegistrationData) => {
-    const isValid = await validateStep(true);
-    if (!isValid) return;
+  // Fetch events and categories on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch events
+        const { data: eventsData, error: eventsError } = await supabase
+          .from('events')
+          .select('*');
+        
+        if (eventsError) throw eventsError;
+        
+        // Fetch categories
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('event_categories')
+          .select('*');
+        
+        if (categoriesError) throw categoriesError;
+        
+        // Fetch event-category links
+        const { data: linksData, error: linksError } = await supabase
+          .from('event_category_link')
+          .select('*');
+        
+        if (linksError) throw linksError;
+        
+        // Map events with their categories
+        const eventsWithCategories = eventsData.map((event: Event) => {
+          const eventLinks = linksData.filter((link: EventCategoryLink) => 
+            link.event_id === event.event_id
+          );
+          
+          const categoryDetails = eventLinks.map((link: EventCategoryLink) => 
+            categoriesData.find((cat: EventCategory) => cat.category_id === link.category_id)
+          ).filter(Boolean);
+          
+          return {
+            ...event,
+            categories: eventLinks,
+            categoryDetails
+          };
+        });
+        
+        setEvents(eventsWithCategories);
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load events and categories. Please refresh the page.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
+    fetchData();
+  }, [toast]);
+
+  const onSubmit = async (formData: RegistrationData) => {
     setIsSubmitting(true);
     try {
-      const registrationData = {
-        schoolName: formData.schoolName,
-        schoolAddress: formData.schoolAddress,
-        coordinatorName: formData.coordinatorName,
-        coordinatorEmail: formData.coordinatorEmail,
-        coordinatorPhone: formData.coordinatorPhone,
-        registrationId: `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase(),
-        status: "pending",
-        createdAt: new Date().toISOString(),
-        events: selectedEvents.map(eventId => ({ 
-          eventId, 
-          participants: participants.filter(p => p.eventId === eventId),
-        })),
-      };
-
-      const { error } = await supabase
-        .from('registrations')
-        .insert(registrationData);
-        
-      if (error) throw error;
-
+      // Generate a unique school ID
+      const school_id = generateSchoolId();
+      
+      // Create the school record
+      const { data: schoolData, error: schoolError } = await supabase
+        .from('schools')
+        .insert({
+          school_id,
+          school_name: formData.school.school_name,
+          address: formData.school.address,
+          coordinator_name: formData.school.coordinator_name,
+          coordinator_email: formData.school.coordinator_email,
+          coordinator_phone: formData.school.coordinator_phone
+        })
+        .select()
+        .single();
+      
+      if (schoolError) throw schoolError;
+      
+      // Map participants to include school_id
+      const participantsToInsert = formData.participants.map(participant => ({
+        school_id,
+        event_id: participant.event_id,
+        participant_name: participant.participant_name,
+        class: participant.class,
+        slot: participant.slot
+      }));
+      
+      // Insert all participants
+      const { error: participantsError } = await supabase
+        .from('participants')
+        .insert(participantsToInsert);
+      
+      if (participantsError) throw participantsError;
+      
       toast({
         title: "Registration Successful!",
-        description: `Your registration ID is ${registrationData.registrationId}`,
+        description: `Your school ID is ${school_id}. Please keep this for your records.`,
       });
 
       form.reset();
-      setSelectedEvents([]);
       setParticipants([]);
+      setSelectedEventId(null);
       setCurrentStep(0);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration error:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to submit registration. Please try again.",
+        description: error.message || "Failed to submit registration. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const validateParticipants = () => {
-    let isValid = true;
+  const handleEventChange = (eventId: string) => {
+    const eventIdNumber = parseInt(eventId, 10);
+    setSelectedEventId(eventIdNumber);
 
-    // Check if we have any events selected
-    if (selectedEvents.length === 0) {
-      toast({
-        variant: "destructive",
-        title: "No Events Selected",
-        description: "Please go back and select at least one event.",
-      });
-      return false;
-    }
+    // Find the selected event
+    const selectedEvent = events.find(event => event.event_id === eventIdNumber);
+    if (!selectedEvent) return;
 
-    // Validate each event's participants
-    for (const eventId of selectedEvents) {
-      const event = events.find((e) => e.id === eventId);
-      if (!event) continue;
+    // Get max participants for this event
+    const maxParticipants = selectedEvent.categories.reduce((max, link) => {
+      return Math.max(max, link.max_participants);
+    }, 0);
 
-      const eventParticipants = participants.filter((p) => p.eventId === eventId);
+    // Reset participants for this event
+    const newParticipants = Array(maxParticipants)
+      .fill(null)
+      .map((_, index) => ({
+        event_id: eventIdNumber,
+        participant_name: "",
+        class: 6, // Default class
+        slot: index + 1
+      }));
 
-      // Check if we have the right number of participants
-      if (eventParticipants.length !== event.maxParticipants) {
-        toast({
-          variant: "destructive",
-          title: "Incomplete Participants",
-          description: `${event.name} requires exactly ${event.maxParticipants} participants.`,
-        });
-        return false;
-      }
-
-      // Check if all participants have valid details
-      for (const participant of eventParticipants) {
-        if (!participant.name || participant.name.trim() === '') {
-          toast({
-            variant: "destructive",
-            title: "Missing Information",
-            description: `Please enter a name for all ${event.name} participants.`,
-          });
-          return false;
-        }
-
-        if (!participant.grade || !/^([6-9]|1[0-2])$/.test(participant.grade)) {
-          toast({
-            variant: "destructive",
-            title: "Invalid Grade",
-            description: `Please enter a valid grade (6-12) for all ${event.name} participants.`,
-          });
-          return false;
-        }
-
-        if (!/^[a-zA-Z\s'.]+$/.test(participant.name)) {
-          toast({
-            variant: "destructive",
-            title: "Invalid Name Format",
-            description: `Participant names can only contain letters and basic punctuation.`,
-          });
-          return false;
-        }
-      }
-    }
-
-    return true;
+    setParticipants(newParticipants);
+    form.setValue('participants', newParticipants);
   };
 
-  const handleEventSelect = (eventId: string) => {
-    if (selectedEvents.length >= 3 && !selectedEvents.includes(eventId)) {
-      toast({
-        variant: "destructive",
-        title: "Maximum events reached",
-        description: "You can only select up to 3 events.",
-      });
-      return;
-    }
-
-    // Check if we're selecting or deselecting
-    const isSelecting = !selectedEvents.includes(eventId);
-
-    const newEvents = isSelecting
-      ? [...selectedEvents, eventId]
-      : selectedEvents.filter((id) => id !== eventId);
-
-    setSelectedEvents(newEvents);
-    form.setValue("selectedEvents", newEvents);
-
-    // Handle participant management
-    if (isSelecting) {
-      // Add empty participant slots for the new event
-      const event = events.find((e) => e.id === eventId);
-      if (event) {
-        const newParticipantsForEvent = Array(event.maxParticipants)
-          .fill(null)
-          .map(() => ({ eventId, name: "", grade: "" }));
-
-        setParticipants([...participants, ...newParticipantsForEvent]);
-        form.setValue("participants", [...participants, ...newParticipantsForEvent]);
-      }
-    } else {
-      // Remove participants for deselected event
-      const newParticipants = participants.filter((p) => p.eventId !== eventId);
-      setParticipants(newParticipants);
-      form.setValue("participants", newParticipants);
-    }
-  };
-
-  const updateParticipant = (index: number, field: 'name' | 'grade', value: string) => {
+  const updateParticipant = (index: number, field: keyof ParticipantFormData, value: any) => {
     const newParticipants = [...participants];
-    newParticipants[index] = { ...newParticipants[index], [field]: value };
+    newParticipants[index] = { 
+      ...newParticipants[index], 
+      [field]: field === 'event_id' || field === 'class' || field === 'slot' 
+        ? parseInt(value, 10) 
+        : value 
+    };
+    
     setParticipants(newParticipants);
     form.setValue("participants", newParticipants);
   };
 
-  const validateStep = async (isSubmit = false) => {
+  const validateStep = async () => {
     switch (currentStep) {
       case 0:
-        return await form.trigger(["schoolName", "schoolAddress"]);
+        return await form.trigger(["school.school_name", "school.address"]);
       case 1:
         return await form.trigger([
-          "coordinatorName",
-          "coordinatorEmail",
-          "coordinatorPhone",
+          "school.coordinator_name",
+          "school.coordinator_email",
+          "school.coordinator_phone",
         ]);
       case 2:
-        if (selectedEvents.length === 0) {
+        if (participants.length === 0) {
           toast({
             variant: "destructive",
-            title: "Events Required",
-            description: "Please select at least one event.",
+            title: "Participants Required",
+            description: "Please select an event and add participants.",
           });
           return false;
         }
-        return await form.trigger(["selectedEvents"]);
-      case 3:
-        return validateParticipants();
+        return await form.trigger(["participants"]);
       default:
         return true;
     }
@@ -348,12 +367,9 @@ const Register = () => {
     }
   };
 
-  // Group participants by event ID for better organization
-  const participantsByEvent = selectedEvents.map(eventId => {
-    const event = events.find(e => e.id === eventId);
-    const eventParticipants = participants.filter(p => p.eventId === eventId);
-    return { eventId, event, participants: eventParticipants };
-  });
+  const handlePrevious = () => {
+    setCurrentStep((prev) => Math.max(0, prev - 1));
+  };
 
   return (
     <div className="min-h-screen bg-[#F4F4F4] py-20">
@@ -390,217 +406,227 @@ const Register = () => {
               </div>
             </div>
 
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentStep}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="space-y-6"
-                  >
-                    {currentStep === 0 && (
-                      <>
-                        {currentStep === 0 && <h2 className="font-semibold text-xl text-[#2E4A7D]">School Details</h2>}
-                        <FormField
-                          control={form.control}
-                          name="schoolName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>School Name</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="schoolAddress"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>School Address</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </>
-                    )}
+            {isLoading ? (
+              <div className="text-center py-10">
+                <p>Loading events data...</p>
+              </div>
+            ) : (
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-6"
+                >
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentStep}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-6"
+                    >
+                      {currentStep === 0 && (
+                        <>
+                          <h2 className="font-semibold text-xl text-[#2E4A7D]">School Details</h2>
+                          <FormField
+                            control={form.control}
+                            name="school.school_name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>School Name</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="school.address"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>School Address</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </>
+                      )}
 
-                    {currentStep === 1 && (
-                      <>
-                        {currentStep === 1 && <h2 className="font-semibold text-xl text-[#2E4A7D]">Coordinator Details</h2>}
-                        <FormField
-                          control={form.control}
-                          name="coordinatorName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Coordinator Name</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="coordinatorEmail"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Email</FormLabel>
-                              <FormControl>
-                                <Input type="email" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="coordinatorPhone"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Phone Number</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="tel"
-                                  {...field}
-                                  placeholder="+91XXXXXXXXXX"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </>
-                    )}
+                      {currentStep === 1 && (
+                        <>
+                          <h2 className="font-semibold text-xl text-[#2E4A7D]">Coordinator Details</h2>
+                          <FormField
+                            control={form.control}
+                            name="school.coordinator_name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Coordinator Name</FormLabel>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="school.coordinator_email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                  <Input type="email" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="school.coordinator_phone"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Phone Number</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="tel"
+                                    {...field}
+                                    placeholder="+91XXXXXXXXXX"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </>
+                      )}
 
-                    {currentStep === 2 && (
-                      <div className="space-y-4">
-                        {currentStep === 2 && <h2 className="font-semibold text-xl text-[#2E4A7D]">Event Selection</h2>}
-                        <h3 className="font-semibold">Select Events (Max 3)</h3>
-                        {events.map((event) => (
-                          <div
-                            key={event.id}
-                            className="flex items-center gap-2"
-                          >
-                            <input
-                              type="checkbox"
-                              id={event.id}
-                              checked={selectedEvents.includes(event.id)}
-                              onChange={() => handleEventSelect(event.id)}
-                              className="w-4 h-4"
-                            />
-                            <label htmlFor={event.id}>
-                              {event.name} (Requires {event.maxParticipants}{" "}
-                              {event.maxParticipants === 1 ? "participant" : "participants"})
-                            </label>
+                      {currentStep === 2 && (
+                        <div className="space-y-4">
+                          <h2 className="font-semibold text-xl text-[#2E4A7D]">Event & Participant Registration</h2>
+                          
+                          {/* Event Selection */}
+                          <div className="mb-6">
+                            <FormLabel>Select Event</FormLabel>
+                            <Select
+                              value={selectedEventId?.toString() || ""}
+                              onValueChange={handleEventChange}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select an event" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {events.map((event) => (
+                                  <SelectItem key={event.event_id} value={event.event_id.toString()}>
+                                    {event.event_name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
-                        ))}
-                        {form.formState.errors.selectedEvents && (
-                          <p className="text-sm text-red-500">
-                            {form.formState.errors.selectedEvents.message}
-                          </p>
-                        )}
-                      </div>
-                    )}
 
-                    {currentStep === 3 && (
-                      <div className="space-y-8">
-                        {currentStep === 3 && <h2 className="font-semibold text-xl text-[#2E4A7D]">Participant Details</h2>}
-                        {participantsByEvent.map((eventGroup) => (
-                          <div key={eventGroup.eventId} className="space-y-6 pb-4 border-b">
-                            <h3 className="font-semibold text-lg">{eventGroup.event?.name}</h3>
-                            <p className="text-sm text-gray-500">
-                              Requires {eventGroup.event?.maxParticipants}{" "}
-                              {eventGroup.event?.maxParticipants === 1 ? "participant" : "participants"}
-                            </p>
+                          {/* Display event categories if an event is selected */}
+                          {selectedEventId && (
+                            <div className="mb-4 p-3 bg-gray-50 rounded-md">
+                              <h3 className="font-medium text-sm mb-2">Event Categories:</h3>
+                              <ul className="text-sm text-gray-600">
+                                {events
+                                  .find(e => e.event_id === selectedEventId)
+                                  ?.categoryDetails
+                                  ?.map((cat, idx) => (
+                                    <li key={idx}>• {cat.category_name} (Classes {cat.min_class}-{cat.max_class})</li>
+                                  ))}
+                              </ul>
+                            </div>
+                          )}
 
-                            {eventGroup.participants.map((participant, pIndex) => {
-                              // Find the overall index in the full participants array
-                              const globalIndex = participants.findIndex(
-                                p => p.eventId === participant.eventId && 
-                                p === participant
-                              );
-
-                              return (
-                                <div key={pIndex} className="space-y-4 p-4 bg-gray-50 rounded-md">
-                                  <h4 className="font-medium">
-                                    Participant {pIndex + 1}
-                                  </h4>
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <Input
-                                      placeholder="Name"
-                                      value={participant.name}
-                                      onChange={(e) => updateParticipant(globalIndex, 'name', e.target.value)}
-                                    />
-                                    <Input
-                                      placeholder="Grade (6-12)"
-                                      value={participant.grade}
-                                      onChange={(e) => updateParticipant(globalIndex, 'grade', e.target.value)}
-                                    />
+                          {/* Participant Details */}
+                          {selectedEventId && participants.length > 0 && (
+                            <div className="space-y-4">
+                              <h3 className="font-medium text-lg">
+                                Participant Details
+                              </h3>
+                              {participants.map((participant, index) => (
+                                <div key={index} className="border p-4 rounded-md">
+                                  <h4 className="text-sm font-medium mb-2">Participant {index + 1}</h4>
+                                  <div className="grid grid-cols-1 gap-4">
+                                    <div>
+                                      <FormLabel>Name</FormLabel>
+                                      <Input
+                                        value={participant.participant_name}
+                                        onChange={(e) =>
+                                          updateParticipant(index, "participant_name", e.target.value)
+                                        }
+                                      />
+                                      {form.formState.errors.participants?.[index]?.participant_name && (
+                                        <p className="text-red-500 text-sm mt-1">
+                                          {String(form.formState.errors.participants?.[index]?.participant_name?.message || "")}
+                                        </p>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <FormLabel>Class (1-12)</FormLabel>
+                                      <Input
+                                        type="number"
+                                        min={1}
+                                        max={12}
+                                        value={participant.class || ""}
+                                        onChange={(e) =>
+                                          updateParticipant(index, "class", e.target.value)
+                                        }
+                                      />
+                                      {form.formState.errors.participants?.[index]?.class && (
+                                        <p className="text-red-500 text-sm mt-1">
+                                          {String(form.formState.errors.participants?.[index]?.class?.message || "")}
+                                        </p>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
-                              );
-                            })}
-                          </div>
-                        ))}
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
 
-                        {selectedEvents.length === 0 && (
-                          <p className="text-center text-gray-500">
-                            Please go back and select at least one event.
-                          </p>
-                        )}
-                      </div>
+                  <div className="flex justify-between pt-4">
+                    {currentStep > 0 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handlePrevious}
+                      >
+                        Previous
+                      </Button>
                     )}
-                  </motion.div>
-                </AnimatePresence>
-
-                <div className="flex justify-between pt-6">
-                  {currentStep > 0 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setCurrentStep((prev) => prev - 1)}
-                    >
-                      Previous
-                    </Button>
-                  )}
-                  {currentStep < formSteps.length - 1 ? (
-                    <Button
-                      type="button"
-                      className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white ml-auto"
-                      onClick={handleNext}
-                    >
-                      Next
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button" // Changed from type="submit"
-                      className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white ml-auto"
-                      disabled={isSubmitting}
-                      onClick={async () => {
-                        const isValid = await validateStep();
-                        if (isValid) {
-                          form.handleSubmit(onSubmit)();
-                        }
-                      }}
-                    >
-                      {isSubmitting ? "Submitting..." : "Submit Registration"}
-                    </Button>
-                  )}
-                </div>
-              </form>
-            </Form>
+                    
+                    {currentStep < formSteps.length - 1 ? (
+                      <Button
+                        type="button"
+                        onClick={handleNext}
+                        className={currentStep === 0 ? "w-full" : "ml-auto"}
+                      >
+                        Next
+                      </Button>
+                    ) : (
+                      <Button
+                        type="submit"
+                        className="ml-auto"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? "Submitting..." : "Submit Registration"}
+                      </Button>
+                    )}
+                  </div>
+                </form>
+              </Form>
+            )}
           </CardContent>
         </Card>
       </div>
