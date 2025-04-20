@@ -32,12 +32,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       } else {
         res.status(500).json({ 
+          success: false,
           message: 'Failed to send email. Please try again later.' 
         });
       }
     } catch (error) {
       console.error('Contact form error:', error);
       res.status(500).json({ 
+        success: false,
         message: 'An error occurred while processing your request' 
       });
     }

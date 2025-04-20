@@ -33,14 +33,12 @@ const Contact = () => {
         }),
       });
 
-      let data;
-      try {
-        data = await response.json();
-      } catch (err) {
-        throw new Error('Failed to parse server response');
-      }
+      const data = await response.json().catch(() => ({
+        success: false,
+        message: 'Failed to parse server response'
+      }));
 
-      if (response.ok && data.success) {
+      if (data.success) {
         toast({
           title: "Message sent",
           description: "We'll get back to you soon!",
