@@ -525,12 +525,7 @@ const Register = () => {
               </div>
             </div>
 
-            {isLoading ? (
-              <div className="text-center py-10">
-                <p>Loading events data...</p>
-              </div>
-            ) : (
-              <Form {...form}>
+            <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-6"
@@ -871,7 +866,6 @@ const Register = () => {
                   </div>
                 </form>
               </Form>
-            )}
           </CardContent>
         </Card>
       </div>
