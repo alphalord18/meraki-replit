@@ -225,45 +225,41 @@ const Register = () => {
   const onSubmit = async (formData: RegistrationData) => {
     setIsSubmitting(true);
     try {
-      // Generate a unique school ID
-      const school_id = generateSchoolId();
+      // Validate that all participants have valid information
+      const invalidParticipants = participants.filter(p => 
+        !p.participant_name || p.class === 0
+      );
       
-      // Create the school record
-      const { data: schoolData, error: schoolError } = await supabase
-        .from('schools')
-        .insert({
-          school_id,
-          school_name: formData.school.school_name,
-          address: formData.school.address,
-          coordinator_name: formData.school.coordinator_name,
-          coordinator_email: formData.school.coordinator_email,
-          coordinator_phone: formData.school.coordinator_phone
-        })
-        .select()
-        .single();
+      if (invalidParticipants.length > 0) {
+        toast({
+          variant: "destructive",
+          title: "Incomplete Participant Details",
+          description: "Please fill in name and class for all participants.",
+        });
+        setIsSubmitting(false);
+        return;
+      }
       
-      if (schoolError) throw schoolError;
-      
-      // Map participants to include school_id
-      const participantsToInsert = formData.participants.map(participant => ({
-        school_id,
+      // Process the participant data to ensure class is valid
+      const participantData = participants.map(participant => ({
         event_id: participant.event_id,
         category_id: participant.category_id,
         participant_name: participant.participant_name,
-        class: participant.class,
+        class: participant.class > 0 ? participant.class : 1, // Ensure class is never 0 
         slot: participant.slot
       }));
       
-      // Insert all participants
-      const { error: participantsError } = await supabase
-        .from('participants')
-        .insert(participantsToInsert);
+      console.log("Submitting participants:", participantData);
       
-      if (participantsError) throw participantsError;
+      // Use our registration service to complete the registration
+      const { school, participants: registeredParticipants } = await completeRegistration(
+        formData.school,
+        participantData
+      );
       
       toast({
         title: "Registration Successful!",
-        description: `Your school ID is ${school_id}. Please keep this for your records.`,
+        description: `Your school ID is ${school.school_id}. Please keep this for your records.`,
       });
 
       form.reset();

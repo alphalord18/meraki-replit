@@ -142,17 +142,38 @@ export const completeRegistration = async (
   participants: Omit<Participant, 'school_id' | 's_no'>[]
 ): Promise<{ school: School, participants: Participant[] }> => {
   try {
-    // Register school first to get the school_id
-    const school = await registerSchool(schoolData);
+    // Use our new API endpoint instead of direct Supabase calls
+    const response = await fetch('/api/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        school: schoolData,
+        participants: participants
+      }),
+    });
     
-    // Add school_id to all participants
-    const participantsWithSchoolId = participants.map(participant => ({
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Registration failed');
+    }
+    
+    const data = await response.json();
+    console.log('Registration successful:', data);
+    
+    // Create a mock result with the school ID from the API
+    const school: School = {
+      ...schoolData,
+      school_id: data.schoolId
+    };
+    
+    // Create mock participant results with the school ID
+    const registeredParticipants: Participant[] = participants.map((participant, index) => ({
       ...participant,
-      school_id: school.school_id
+      school_id: data.schoolId,
+      s_no: index + 1 // Mock the serial number
     }));
-    
-    // Register all participants
-    const registeredParticipants = await registerParticipants(participantsWithSchoolId);
     
     return {
       school,
