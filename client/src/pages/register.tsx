@@ -130,10 +130,10 @@ const formSteps = [
   },
 ];
 
-// Generate a unique school ID
+// Generate a unique school ID that fits within the VARCHAR(20) limit
 const generateSchoolId = (): string => {
-  const randomPart = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-  const timestamp = Date.now().toString().slice(-6);
+  const randomPart = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  const timestamp = Date.now().toString().slice(-5);
   return `SCH${timestamp}${randomPart}`;
 };
 
@@ -322,8 +322,9 @@ const Register = () => {
       return;
     }
 
-    // Get category details for class validation
+    // Get category details
     const category = event.categoryDetails?.find(cat => cat.category_id === categoryId);
+    if (!category) return;
 
     // Get the next slot number
     const nextSlot = existingParticipantsForEventCategory.length + 1;
@@ -333,7 +334,7 @@ const Register = () => {
       event_id: eventId,
       category_id: categoryId,
       participant_name: "",
-      class: category ? category.min_class : 6, // Default to minimum class if category is found
+      class: category.min_class,
       slot: nextSlot
     };
 
@@ -342,6 +343,46 @@ const Register = () => {
     // Update form value
     const updatedParticipants = [...participants, newParticipant];
     form.setValue("participants", updatedParticipants);
+  };
+  
+  // Auto-add minimum participants for a category
+  const initializeParticipantsForCategory = (eventId: number, categoryId: number) => {
+    const event = events.find(e => e.event_id === eventId);
+    if (!event) return;
+
+    // Find the category link to get minimum participants required
+    const eventCategoryLink = event.categories.find(link => 
+      link.category_id === categoryId
+    );
+    
+    if (!eventCategoryLink) return;
+    
+    // Find category details for class limits
+    const category = event.categoryDetails?.find(cat => cat.category_id === categoryId);
+    if (!category) return;
+
+    // Get min participants needed (always at least 1)
+    const minParticipants = Math.min(eventCategoryLink.max_participants, 1);
+    
+    // Check if we already have participants for this event/category
+    const existingParticipantsCount = participants.filter(p => 
+      p.event_id === eventId && p.category_id === categoryId
+    ).length;
+    
+    if (existingParticipantsCount > 0) return; // Already initialized
+    
+    // Create new participants
+    const newParticipants = Array.from({ length: minParticipants }).map((_, index) => ({
+      event_id: eventId,
+      category_id: categoryId,
+      participant_name: "",
+      class: category.min_class,
+      slot: index + 1
+    }));
+    
+    // Add to state and form
+    setParticipants(prev => [...prev, ...newParticipants]);
+    form.setValue("participants", [...participants, ...newParticipants]);
   };
 
   const updateParticipant = (index: number, field: keyof ParticipantFormData, value: any) => {
@@ -658,10 +699,27 @@ const Register = () => {
                                               type="button"
                                               variant="outline"
                                               size="sm"
-                                              onClick={() => addParticipantForEvent(eventId, category.category_id)}
+                                              onClick={() => {
+                                                // Auto-initialize if this is the first time
+                                                if (participants.filter(p => 
+                                                  p.event_id === eventId && 
+                                                  p.category_id === category.category_id
+                                                ).length === 0) {
+                                                  initializeParticipantsForCategory(eventId, category.category_id);
+                                                } else {
+                                                  // Add additional participant
+                                                  addParticipantForEvent(eventId, category.category_id);
+                                                }
+                                              }}
                                               className="w-full mt-1"
                                             >
-                                              Add Participant
+                                              {participants.filter(p => 
+                                                p.event_id === eventId && 
+                                                p.category_id === category.category_id
+                                              ).length === 0 
+                                                ? "Select Category" 
+                                                : "Add Participant"
+                                              }
                                             </Button>
                                           </div>
                                         ))}
