@@ -154,9 +154,13 @@ export const completeRegistration = async (
       }),
     });
     
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Registration failed');
+    const data = await response.json().catch(() => ({
+      success: false,
+      message: 'Failed to parse server response'
+    }));
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Registration failed');
     }
     
     const data = await response.json();

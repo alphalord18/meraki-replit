@@ -96,6 +96,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!school || !participants || !Array.isArray(participants)) {
         return res.status(400).json({
+          success: false,
           message: 'Invalid registration data format'
         });
       }
@@ -111,14 +112,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // In a real application, this would insert into the database
       // Here we just return success for testing
       res.status(200).json({
+        success: true,
         message: 'Registration successful!',
         schoolId: schoolId,
         participantsRegistered: participants.length
       });
     } catch (error) {
       console.error('Registration error:', error);
+      // Ensure we're sending JSON even in error cases
       res.status(500).json({
-        message: 'An error occurred during registration'
+        success: false,
+        message: 'An error occurred during registration',
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });

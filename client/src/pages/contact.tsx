@@ -34,9 +34,12 @@ const Contact = () => {
         }),
       });
       
-      const data = await response.json();
+      const data = await response.json().catch(() => ({
+        success: false,
+        message: 'Failed to parse server response'
+      }));
       
-      if (response.ok) {
+      if (response.ok && data.success) {
         toast({
           title: "Message sent",
           description: "We'll get back to you soon!",
