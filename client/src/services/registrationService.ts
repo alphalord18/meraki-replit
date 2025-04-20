@@ -10,9 +10,9 @@ import {
 
 // Generate unique school ID
 export const generateSchoolId = (): string => {
-  const randomPart = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-  const timestamp = Date.now().toString().slice(-6);
-  return `SCH${timestamp}${randomPart}`;
+  const randomPart = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  const timestamp = Date.now().toString().slice(-4);
+  return `S${timestamp}${randomPart}`;
 };
 
 // Fetch all events
