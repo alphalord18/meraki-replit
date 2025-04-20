@@ -21,7 +21,7 @@ const Contact = () => {
     
     try {
       // Send data to our API route
-      const response = await fetch('/api/send-email', {
+      const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -29,6 +29,7 @@ const Contact = () => {
         body: JSON.stringify({
           name,
           email,
+          subject: 'Website Contact Form', // Add subject for API route
           message,
         }),
       });
