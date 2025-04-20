@@ -162,8 +162,6 @@ export const completeRegistration = async (
     if (!response.ok || !data.success) {
       throw new Error(data.message || 'Registration failed');
     }
-    
-    const data = await response.json();
     console.log('Registration successful:', data);
     
     // Create a mock result with the school ID from the API
