@@ -105,7 +105,7 @@ export const fetchEventsWithCategories = async (): Promise<EventWithCategories[]
 export const registerSchool = async (schoolData: Omit<School, 'school_id'>): Promise<School> => {
   try {
     const school_id = generateSchoolId();
-    
+
     const { data, error } = await supabase
       .from('schools')
       .insert({ ...schoolData, school_id })
@@ -113,7 +113,7 @@ export const registerSchool = async (schoolData: Omit<School, 'school_id'>): Pro
       .single();
 
     if (error) throw error;
-    return data as School;
+    return data;
   } catch (error) {
     console.error('Error registering school:', error);
     throw error;
@@ -129,7 +129,7 @@ export const registerParticipants = async (participants: Omit<Participant, 's_no
       .select();
 
     if (error) throw error;
-    return data as Participant[];
+    return data;
   } catch (error) {
     console.error('Error registering participants:', error);
     throw error;
@@ -142,41 +142,18 @@ export const completeRegistration = async (
   participants: Omit<Participant, 'school_id' | 's_no'>[]
 ): Promise<{ school: School, participants: Participant[] }> => {
   try {
-    // Use our new API endpoint instead of direct Supabase calls
-    const response = await fetch('/api/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        school: schoolData,
-        participants: participants
-      }),
-    });
-    
-    const data = await response.json().catch(() => ({
-      success: false,
-      message: 'Failed to parse server response'
-    }));
-    
-    if (!response.ok || !data.success) {
-      throw new Error(data.message || 'Registration failed');
-    }
-    console.log('Registration successful:', data);
-    
-    // Create a mock result with the school ID from the API
-    const school: School = {
-      ...schoolData,
-      school_id: data.schoolId
-    };
-    
-    // Create mock participant results with the school ID
-    const registeredParticipants: Participant[] = participants.map((participant, index) => ({
+    // First register the school
+    const school = await registerSchool(schoolData);
+
+    // Add school_id to participants
+    const participantsWithSchool = participants.map(participant => ({
       ...participant,
-      school_id: data.schoolId,
-      s_no: index + 1 // Mock the serial number
+      school_id: school.school_id
     }));
-    
+
+    // Register all participants
+    const registeredParticipants = await registerParticipants(participantsWithSchool);
+
     return {
       school,
       participants: registeredParticipants

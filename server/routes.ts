@@ -94,8 +94,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API route for school registration system
   app.post('/api/register', express.json(), async (req, res) => {
     try {
-      console.log('Registration submission received');
-
       const { school, participants } = req.body;
 
       if (!school || !participants || !Array.isArray(participants)) {
@@ -105,29 +103,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Generate a school ID (this would be handled by the database in production)
-      const schoolId = `SCH${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      // Use the registration service to handle the database operations
+      const { school: registeredSchool, participants: registeredParticipants } = 
+        await completeRegistration(school, participants);
 
-      // Log for debugging
-      console.log('Processing registration with school ID:', schoolId);
-      console.log('School data:', school);
-      console.log('Participant count:', participants.length);
-
-      // In a real application, this would insert into the database
-      // Here we just return success for testing
       res.status(200).json({
         success: true,
         message: 'Registration successful!',
-        schoolId: schoolId,
-        participantsRegistered: participants.length
+        school: registeredSchool,
+        participants: registeredParticipants
       });
     } catch (error) {
       console.error('Registration error:', error);
-      // Ensure we're sending JSON even in error cases
       res.status(500).json({
         success: false,
-        message: 'An error occurred during registration',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Registration failed'
       });
     }
   });
