@@ -14,6 +14,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate request data
       if (!name || !email || !subject || !message) {
         return res.status(400).json({ 
+          success: false,
           message: 'All fields are required' 
         });
       }
@@ -26,6 +27,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (emailSent) {
         res.status(200).json({ 
+          success: true,
           message: 'Message received! We will contact you soon.' 
         });
       } else {

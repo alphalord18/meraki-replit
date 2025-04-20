@@ -18,9 +18,8 @@ const Contact = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
-      // Send data to our API route
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
@@ -29,23 +28,24 @@ const Contact = () => {
         body: JSON.stringify({
           name,
           email,
-          subject: 'Website Contact Form', // Add subject for API route
+          subject: 'Website Contact Form',
           message,
         }),
       });
-      
-      const data = await response.json().catch(() => ({
-        success: false,
-        message: 'Failed to parse server response'
-      }));
-      
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (err) {
+        throw new Error('Failed to parse server response');
+      }
+
       if (response.ok && data.success) {
         toast({
           title: "Message sent",
           description: "We'll get back to you soon!",
         });
-        
-        // Reset form
+
         setName("");
         setEmail("");
         setMessage("");
