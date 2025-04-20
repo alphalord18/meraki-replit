@@ -131,11 +131,11 @@ const formSteps = [
   },
 ];
 
-// Generate a unique school ID that fits within the VARCHAR(20) limit
+// Generate a unique school ID that fits within the VARCHAR(10) limit
 const generateSchoolId = (): string => {
-  const randomPart = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  const timestamp = Date.now().toString().slice(-5);
-  return `SCH${timestamp}${randomPart}`;
+  const randomPart = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+  const timestamp = Date.now().toString().slice(-4);
+  return `S${timestamp}${randomPart}`;
 };
 
 const Register = () => {
@@ -752,15 +752,18 @@ const Register = () => {
                                                 <div key={pIndex} className="bg-white p-4 rounded-md shadow-sm border">
                                                   <div className="flex justify-between items-center mb-3">
                                                     <h5 className="font-medium">Participant {participant.slot}</h5>
-                                                    <Button
-                                                      type="button"
-                                                      variant="outline"
-                                                      size="sm"
-                                                      onClick={() => removeParticipant(globalIndex)}
-                                                      className="text-red-500 h-8"
-                                                    >
-                                                      Remove
-                                                    </Button>
+                                                    {/* Only show remove button for optional participants beyond the required minimum */}
+                                                    {participant.slot > eventCategoryLink.max_participants && (
+                                                      <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => removeParticipant(globalIndex)}
+                                                        className="text-red-500 h-8"
+                                                      >
+                                                        Remove
+                                                      </Button>
+                                                    )}
                                                   </div>
                                                   
                                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
