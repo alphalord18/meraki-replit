@@ -362,9 +362,8 @@ const Register = () => {
     const category = event.categoryDetails?.find(cat => cat.category_id === categoryId);
     if (!category) return;
 
-    // For this implementation, we'll always add at least 1 participant
-    // Since there's no min_participants field in the schema
-    // Ideally this would come from the schema
+    // For this implementation, we'll use the max_participants as our required minimum
+    // since there's no min_participants field in the schema
     const minParticipants = Math.max(1, eventCategoryLink.max_participants);
     
     // Check if we already have participants for this event/category
@@ -753,6 +752,18 @@ const Register = () => {
                                                 }
                                               }}
                                               className="w-full mt-1"
+                                              disabled={
+                                                // Disable if participants already maxed out
+                                                participants.filter(p => 
+                                                  p.event_id === eventId && 
+                                                  p.category_id === category.category_id
+                                                ).length >= (
+                                                  // Find the event category link to get max participants
+                                                  event.categories.find(link => 
+                                                    link.category_id === category.category_id
+                                                  )?.max_participants || 0
+                                                )
+                                              }
                                             >
                                               {participants.filter(p => 
                                                 p.event_id === eventId && 
@@ -776,9 +787,27 @@ const Register = () => {
                                       
                                       return (
                                         <div key={key} className="mt-4">
-                                          <h4 className="font-medium text-md mb-3 bg-white p-2 rounded">
-                                            {category.category_name} Participants
-                                          </h4>
+                                          <div className="flex justify-between items-center bg-white p-2 rounded mb-3">
+                                            <h4 className="font-medium text-md">
+                                              {category.category_name} Participants
+                                            </h4>
+                                            <Button
+                                              type="button"
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => {
+                                                // Remove all participants for this category
+                                                const updatedParticipants = participants.filter(
+                                                  p => !(p.event_id === eventId && p.category_id === category.category_id)
+                                                );
+                                                setParticipants(updatedParticipants);
+                                                form.setValue("participants", updatedParticipants);
+                                              }}
+                                              className="text-red-500 h-8"
+                                            >
+                                              Remove Category
+                                            </Button>
+                                          </div>
                                           
                                           <div className="space-y-4">
                                             {group.participants.map((participant, pIndex) => {
@@ -795,30 +824,7 @@ const Register = () => {
                                                 <div key={pIndex} className="bg-white p-4 rounded-md shadow-sm border">
                                                   <div className="flex justify-between items-center mb-3">
                                                     <h5 className="font-medium">Participant {participant.slot}</h5>
-                                                    {/* Only show remove button for optional participants beyond the minimum */}
-                                                    {(() => {
-                                                      // Find the event category link to determine if this is an optional participant
-                                                      const event = events.find(e => e.event_id === participant.event_id);
-                                                      if (!event) return null;
-                                                      
-                                                      const link = event.categories.find(c => 
-                                                        c.category_id === participant.category_id
-                                                      );
-                                                      
-                                                      if (!link) return null;
-                                                      
-                                                      return participant.slot > 1 && (
-                                                        <Button
-                                                          type="button"
-                                                          variant="outline"
-                                                          size="sm"
-                                                          onClick={() => removeParticipant(globalIndex)}
-                                                          className="text-red-500 h-8"
-                                                        >
-                                                          Remove
-                                                        </Button>
-                                                      );
-                                                    })()}
+                                                    {/* No individual participant remove buttons as per requirement */}
                                                   </div>
                                                   
                                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
