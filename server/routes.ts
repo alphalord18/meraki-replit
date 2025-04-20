@@ -4,9 +4,12 @@ import { storage } from "./storage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API route for contact form submission
-  app.post('/api/contact', async (req, res) => {
+  app.post('/api/contact', express.json(), async (req, res) => {
     try {
       const { name, email, subject, message } = req.body;
+      
+      // Log the request for debugging
+      console.log('Contact form submission:', { name, email, subject, message: message.substring(0, 50) + '...' });
       
       // Validate request data
       if (!name || !email || !subject || !message) {
