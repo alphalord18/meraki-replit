@@ -4,7 +4,7 @@ import { storage } from "./storage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API route for contact form submission
-  app.post('/api/contact', (req, res) => {
+  app.post('/api/contact', async (req, res) => {
     try {
       const { name, email, subject, message } = req.body;
       
@@ -15,12 +15,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // In a real application, this would save to a database or send an email
-      // For now, we'll just return a success response
-      res.status(200).json({ 
-        message: 'Message received! We will contact you soon.' 
-      });
+      // Import the email function
+      const { sendContactEmail } = await import('./email');
+      
+      // Send the email
+      const emailSent = await sendContactEmail({ name, email, subject, message });
+      
+      if (emailSent) {
+        res.status(200).json({ 
+          message: 'Message received! We will contact you soon.' 
+        });
+      } else {
+        res.status(500).json({ 
+          message: 'Failed to send email. Please try again later.' 
+        });
+      }
     } catch (error) {
+      console.error('Contact form error:', error);
       res.status(500).json({ 
         message: 'An error occurred while processing your request' 
       });

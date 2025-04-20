@@ -1,31 +1,75 @@
 import { useState, FormEvent } from 'react';
 import { motion } from 'framer-motion';
-import { socialLinks } from '@/lib/data';
+import { useToast } from '@/hooks/use-toast';
+
+// Define social links since the data.ts file wasn't found
+const socialLinks = [
+  { icon: "instagram", url: "https://instagram.com/merakifest" },
+  { icon: "twitter", url: "https://twitter.com/merakifest" },
+  { icon: "facebook", url: "https://facebook.com/merakifest" }
+];
 
 const Contact = () => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     subject: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // Form submission would be handled here in a real application
-    console.log('Form submitted:', formData);
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      subject: '',
-      message: ''
-    });
+    setIsSubmitting(true);
+    
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast({
+          title: "Success!",
+          description: data.message,
+          variant: "default",
+        });
+        
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          subject: '',
+          message: ''
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Contact form error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const containerVariants = {
@@ -135,8 +179,9 @@ const Contact = () => {
                   className="px-8 py-3 bg-[#06D6A0] text-white rounded-full font-medium hover:bg-opacity-90 transition"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  disabled={isSubmitting}
                 >
-                  Send Message
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
                 </motion.button>
               </form>
             </motion.div>
