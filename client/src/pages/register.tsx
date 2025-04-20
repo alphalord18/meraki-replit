@@ -452,6 +452,48 @@ const Register = () => {
         }
         return true;
       case 3:
+        // Make sure we have filled participants for at least one category per selected event
+        const filledParticipantsByEvent = new Map<number, boolean>();
+        
+        // Initialize map with all selected events as false (not having filled participants yet)
+        selectedEventIds.forEach(eventId => {
+          filledParticipantsByEvent.set(eventId, false);
+        });
+        
+        // Check if we have filled participants for each selected event
+        for (const participant of participants) {
+          // Skip unfilled participants
+          if (!participant.participant_name || participant.class === 0) {
+            continue;
+          }
+          
+          // If this is a participant for a selected event, mark it as having filled participants
+          if (selectedEventIds.includes(participant.event_id)) {
+            filledParticipantsByEvent.set(participant.event_id, true);
+          }
+        }
+        
+        // Check if any selected event doesn't have filled participants
+        const missingEvents: string[] = [];
+        filledParticipantsByEvent.forEach((hasFilledParticipants, eventId) => {
+          if (!hasFilledParticipants) {
+            const event = events.find(e => e.event_id === eventId);
+            if (event) {
+              missingEvents.push(event.event_name);
+            }
+          }
+        });
+        
+        if (missingEvents.length > 0) {
+          toast({
+            variant: "destructive",
+            title: "Missing Participants",
+            description: `Please add and fill participant details for the following events: ${missingEvents.join(", ")}`,
+          });
+          return false;
+        }
+        
+        // Check if we have any participants at all
         if (participants.length === 0) {
           toast({
             variant: "destructive",
@@ -460,6 +502,7 @@ const Register = () => {
           });
           return false;
         }
+        
         return await form.trigger(["participants"]);
       default:
         return true;
@@ -752,18 +795,30 @@ const Register = () => {
                                                 <div key={pIndex} className="bg-white p-4 rounded-md shadow-sm border">
                                                   <div className="flex justify-between items-center mb-3">
                                                     <h5 className="font-medium">Participant {participant.slot}</h5>
-                                                    {/* Only show remove button for optional participants beyond the required minimum */}
-                                                    {participant.slot > eventCategoryLink.max_participants && (
-                                                      <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => removeParticipant(globalIndex)}
-                                                        className="text-red-500 h-8"
-                                                      >
-                                                        Remove
-                                                      </Button>
-                                                    )}
+                                                    {/* Only show remove button for optional participants beyond the minimum */}
+                                                    {(() => {
+                                                      // Find the event category link to determine if this is an optional participant
+                                                      const event = events.find(e => e.event_id === participant.event_id);
+                                                      if (!event) return null;
+                                                      
+                                                      const link = event.categories.find(c => 
+                                                        c.category_id === participant.category_id
+                                                      );
+                                                      
+                                                      if (!link) return null;
+                                                      
+                                                      return participant.slot > 1 && (
+                                                        <Button
+                                                          type="button"
+                                                          variant="outline"
+                                                          size="sm"
+                                                          onClick={() => removeParticipant(globalIndex)}
+                                                          className="text-red-500 h-8"
+                                                        >
+                                                          Remove
+                                                        </Button>
+                                                      );
+                                                    })()}
                                                   </div>
                                                   
                                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
