@@ -137,7 +137,7 @@ const Hero = () => {
             <Button
               size="lg"
               className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white text-sm md:text-base"
-              onClick={() => window.location.href = '/register'}
+              onClick={() => document.location.href = '/register'}
             >
               Register Now <ArrowRight className="ml-2 w-4 h-4 md:w-5 md:h-5" />
             </Button>

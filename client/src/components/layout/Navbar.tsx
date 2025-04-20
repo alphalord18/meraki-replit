@@ -46,8 +46,8 @@ const Navbar = () => {
       } border-b`}
     >
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/">
-          <a className="text-2xl font-bold">MERAKI 2025</a>
+        <Link href="/" className="text-2xl font-bold">
+          MERAKI 2025
         </Link>
 
         {/* Mobile Menu Button - increased z-index */}
@@ -113,20 +113,20 @@ const Navbar = () => {
             animate-in fade-in slide-in-from-top duration-300"
           >
             <nav className="container mx-auto px-4 py-6 flex flex-col items-center gap-6">
-              <Link href="/events">
-                <a className="text-lg py-3 text-center w-full hover:text-[#FFC857] transition-colors">Events</a>
+              <Link href="/events" className="text-lg py-3 text-center w-full hover:text-[#FFC857] transition-colors">
+                Events
               </Link>
-              <Link href="/speakers">
-                <a className="text-lg py-3 text-center w-full hover:text-[#FFC857] transition-colors">Speakers</a>
+              <Link href="/speakers" className="text-lg py-3 text-center w-full hover:text-[#FFC857] transition-colors">
+                Speakers
               </Link>
-              <Link href="/blog">
-                <a className="text-lg py-3 text-center w-full hover:text-[#FFC857] transition-colors">Blog</a>
+              <Link href="/blog" className="text-lg py-3 text-center w-full hover:text-[#FFC857] transition-colors">
+                Blog
               </Link>
-              <Link href="/sponsors">
-                <a className="text-lg py-3 text-center w-full hover:text-[#FFC857] transition-colors">Sponsors</a>
+              <Link href="/sponsors" className="text-lg py-3 text-center w-full hover:text-[#FFC857] transition-colors">
+                Sponsors
               </Link>
-              <Link href="/contact">
-                <a className="text-lg py-3 text-center w-full hover:text-[#FFC857] transition-colors">Contact</a>
+              <Link href="/contact" className="text-lg py-3 text-center w-full hover:text-[#FFC857] transition-colors">
+                Contact
               </Link>
               <Button 
                 asChild 
