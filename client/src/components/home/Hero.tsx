@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link } from "wouter";
 
 const CountdownTimer = () => {
   const [timeLeft, setTimeLeft] = useState({
@@ -135,17 +136,22 @@ const Hero = () => {
             className="flex flex-wrap justify-center md:justify-start gap-3 md:gap-4"
           >
             <Button
+              asChild
               size="lg"
               className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white text-sm md:text-base"
-              onClick={() => document.location.href = '/register'}
             >
-              Register Now <ArrowRight className="ml-2 w-4 h-4 md:w-5 md:h-5" />
+              <Link href="/register">
+                Register Now <ArrowRight className="ml-2 w-4 h-4 md:w-5 md:h-5" />
+              </Link>
             </Button>
             <Button
+              asChild
               size="lg"
               className="bg-[#FFC857] hover:bg-[#2E4A7D] text-black hover:text-white text-sm md:text-base"
             >
-              View Events <Calendar className="ml-2 w-4 h-4 md:w-5 md:h-5" />
+              <Link href="/events">
+                View Events <Calendar className="ml-2 w-4 h-4 md:w-5 md:h-5" />
+              </Link>
             </Button>
           </motion.div>
 
