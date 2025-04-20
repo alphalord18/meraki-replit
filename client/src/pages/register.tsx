@@ -22,8 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { addDoc, collection } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase";
 
 const events = [
   { id: "poetry_slam", name: "Poetry Slam Championship", maxParticipants: 2 },
@@ -156,18 +155,18 @@ const Register = () => {
     },
   });
 
-  const onSubmit = async (data: RegistrationData) => {
+  const onSubmit = async (formData: RegistrationData) => {
     const isValid = await validateStep(true);
     if (!isValid) return;
 
     setIsSubmitting(true);
     try {
       const registrationData = {
-        schoolName: data.schoolName,
-        schoolAddress: data.schoolAddress,
-        coordinatorName: data.coordinatorName,
-        coordinatorEmail: data.coordinatorEmail,
-        coordinatorPhone: data.coordinatorPhone,
+        schoolName: formData.schoolName,
+        schoolAddress: formData.schoolAddress,
+        coordinatorName: formData.coordinatorName,
+        coordinatorEmail: formData.coordinatorEmail,
+        coordinatorPhone: formData.coordinatorPhone,
         registrationId: `REG-${Math.random().toString(36).substr(2, 9)}`.toUpperCase(),
         status: "pending",
         createdAt: new Date().toISOString(),
@@ -177,7 +176,11 @@ const Register = () => {
         })),
       };
 
-      await addDoc(collection(db, "registrations"), registrationData);
+      const { error } = await supabase
+        .from('registrations')
+        .insert(registrationData);
+        
+      if (error) throw error;
 
       toast({
         title: "Registration Successful!",
