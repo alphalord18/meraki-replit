@@ -24,6 +24,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
+import { completeRegistration } from "@/services/registrationService";
 import type { 
   Event, 
   EventCategory, 
