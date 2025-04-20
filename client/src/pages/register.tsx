@@ -83,8 +83,9 @@ const participantSchema = z.object({
   class: z
     .number()
     .int()
-    .min(1, "Class must be at least 1")
-    .max(12, "Class must not exceed 12"),
+    .refine(val => val >= 1 && val <= 12, {
+      message: "Please select a class between 1 and 12",
+    }),
   event_id: z
     .number()
     .int()
@@ -361,9 +362,9 @@ const Register = () => {
     const category = event.categoryDetails?.find(cat => cat.category_id === categoryId);
     if (!category) return;
 
-    // Get minimum participants needed - always require at least 1 participant
-    // For this implementation, we'll use max_participants as our minimum requirement
-    // as there's no min_participants field in the schema
+    // For this implementation, we'll always add at least 1 participant
+    // Since there's no min_participants field in the schema
+    // Ideally this would come from the schema
     const minParticipants = Math.max(1, eventCategoryLink.max_participants);
     
     // Check if we already have participants for this event/category
@@ -373,7 +374,7 @@ const Register = () => {
     
     if (existingParticipantsCount > 0) return; // Already initialized
     
-    // Create new participants - classes will be left empty for user selection
+    // Create new participants - classes will be left empty (0) for user selection
     const newParticipants = Array.from({ length: minParticipants }).map((_, index) => ({
       event_id: eventId,
       category_id: categoryId,
