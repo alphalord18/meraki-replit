@@ -123,9 +123,19 @@ export const registerSchool = async (schoolData: Omit<School, 'school_id'>): Pro
 // Register participants
 export const registerParticipants = async (participants: Omit<Participant, 's_no'>[]): Promise<Participant[]> => {
   try {
+    // Ensure all required fields are present
+    const participantsToInsert = participants.map(participant => ({
+      school_id: participant.school_id,
+      event_id: participant.event_id,
+      category_id: participant.category_id,
+      participant_name: participant.participant_name,
+      class: participant.class,
+      slot: participant.slot
+    }));
+
     const { data, error } = await supabase
       .from('participants')
-      .insert(participants)
+      .insert(participantsToInsert)
       .select();
 
     if (error) throw error;
@@ -145,10 +155,15 @@ export const completeRegistration = async (
     // First register the school
     const school = await registerSchool(schoolData);
 
-    // Add school_id to participants
+    // Add school_id to participants and ensure all required fields
     const participantsWithSchool = participants.map(participant => ({
       ...participant,
-      school_id: school.school_id
+      school_id: school.school_id,
+      category_id: participant.category_id || 1, // Ensure category_id is present
+      event_id: participant.event_id,
+      participant_name: participant.participant_name,
+      class: participant.class,
+      slot: participant.slot
     }));
 
     // Register all participants
