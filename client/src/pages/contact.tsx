@@ -33,15 +33,12 @@ const Contact = () => {
         }),
       });
 
-      const data = await response.json().catch(() => ({
-        success: false,
-        message: 'Failed to parse server response'
-      }));
+      const data = await response.json();
 
-      if (data.success) {
+      if (response.ok) {
         toast({
-          title: "Message sent",
-          description: "We'll get back to you soon!",
+          title: "Success",
+          description: data.message || "Message sent successfully!",
         });
 
         setName("");

@@ -8,9 +8,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { name, email, subject, message } = req.body;
 
-      // Log the request for debugging
-      console.log('Contact form submission:', { name, email, subject, message: message.substring(0, 50) + '...' });
-
       // Validate request data
       if (!name || !email || !subject || !message) {
         return res.status(400).json({ 
@@ -18,6 +15,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: 'All fields are required' 
         });
       }
+
+      // Log successful validation
+      console.log('Processing contact form submission for:', email);
 
       // Import the email function
       const { sendContactEmail } = await import('./email');
