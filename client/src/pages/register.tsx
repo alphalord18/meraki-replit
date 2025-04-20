@@ -23,6 +23,14 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
+import type { 
+  Event, 
+  EventCategory, 
+  EventCategoryLink, 
+  EventWithCategories,
+  ParticipantFormData,
+  School
+} from "@/types/registration";
 
 // Define schemas based on the PostgreSQL database structure
 const schoolSchema = z.object({
@@ -93,38 +101,6 @@ const registrationSchema = z.object({
 });
 
 type RegistrationData = z.infer<typeof registrationSchema>;
-
-// Types for database entities
-interface EventCategory {
-  category_id: number;
-  category_name: string;
-  min_class: number;
-  max_class: number;
-}
-
-interface Event {
-  event_id: number;
-  event_name: string;
-}
-
-interface EventCategoryLink {
-  id: number;
-  event_id: number;
-  category_id: number;
-  max_participants: number;
-}
-
-interface EventWithCategories extends Event {
-  categories: EventCategoryLink[];
-  categoryDetails?: EventCategory[];
-}
-
-interface ParticipantFormData {
-  event_id: number;
-  participant_name: string;
-  class: number;
-  slot: number;
-}
 
 const formSteps = [
   {
@@ -210,7 +186,7 @@ const Register = () => {
           
           const categoryDetails = eventLinks.map((link: EventCategoryLink) => 
             categoriesData.find((cat: EventCategory) => cat.category_id === link.category_id)
-          ).filter(Boolean);
+          ).filter(Boolean) as EventCategory[];
           
           return {
             ...event,

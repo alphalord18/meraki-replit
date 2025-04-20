@@ -1,4 +1,3 @@
-// Registration types matching the PostgreSQL schema
 export interface School {
   school_id: string;
   school_name: string;
@@ -36,7 +35,6 @@ export interface Participant {
   slot: number;
 }
 
-// Types for form state management
 export interface EventWithCategories extends Event {
   categories: EventCategoryLink[];
   categoryDetails?: EventCategory[]; // To store the full category details
