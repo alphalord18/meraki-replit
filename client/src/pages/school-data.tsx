@@ -3,35 +3,34 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import * as XLSX from 'xlsx';
-import { useNavigate } from 'react-router-dom';  // Use useNavigate from react-router-dom
+import { useLocation } from 'wouter';  // ✅ Changed here
 
 export default function CombinedTable() {
   const [schoolInfo, setSchoolInfo] = useState<any>(null);
   const [participants, setParticipants] = useState<any[]>([]);
   const [eventSummary, setEventSummary] = useState<any[]>([]);
 
-  const navigate = useNavigate();  // Initialize useNavigate
+  const [, navigate] = useLocation(); // ✅ Changed here
 
   const code = new URLSearchParams(window.location.search).get('code');  // Get 'code' from the URL query parameters
 
   useEffect(() => {
     if (!code) {
-      navigate('/school-entry');  // Redirect to school-entry if 'code' is missing
+      navigate('/school-entry');  // ✅ Changed to Wouter-compatible
       return;
     }
 
     const fetchData = async () => {
-      // Dynamic fetch school data based on 'code'
       const { data: schoolData } = await supabase
         .from('schools')
         .select('school_name, school_id, coordinator_name, coordinator_phone')
-        .eq('school_id', code.toUpperCase())  // Use 'code' from the URL
+        .eq('school_id', code.toUpperCase())
         .single();
 
       const { data: participantData } = await supabase
         .from('participants')
         .select('participant_name, class, event_id')
-        .eq('school_id', code.toUpperCase());  // Use 'code' from the URL
+        .eq('school_id', code.toUpperCase());
 
       const { data: eventsData } = await supabase
         .from('events')
@@ -71,28 +70,25 @@ export default function CombinedTable() {
     };
 
     fetchData();
-  }, [code]);  // Dependency on 'code' ensures data fetch when the 'code' changes
+  }, [code]);
 
   const exportToExcel = () => {
     const rows: any[] = [];
 
-    // --- School Info ---
     rows.push(['School Details']);
     rows.push(['School', schoolInfo.school_name]);
     rows.push(['Code', schoolInfo.school_id]);
     rows.push(['Teacher Escort', schoolInfo.coordinator_name]);
     rows.push(['Contact', schoolInfo.coordinator_phone]);
-    rows.push([]); // empty line
+    rows.push([]);
 
-    // --- Participants ---
     rows.push(['Participants']);
     rows.push(['Name', 'Class']);
     participants.forEach((p) => {
       rows.push([p.participant_name, p.class]);
     });
-    rows.push([]); // empty line
+    rows.push([]);
 
-    // --- Event Summary ---
     rows.push(['Event Summary']);
     rows.push(['S. No', 'Event', 'Total', 'Power Rangerz', 'Avengers', 'Titans']);
     eventSummary.forEach((e: any, i: number) => {
@@ -107,7 +103,6 @@ export default function CombinedTable() {
     });
 
     const ws = XLSX.utils.aoa_to_sheet(rows);
-    // Style headers: bold
     const bold = { font: { bold: true } };
     ['A1', 'A6', 'A8'].forEach((cell) => ws[cell] && (ws[cell].s = bold));
     ['A2', 'A3', 'A4', 'A5', 'A7', 'B7'].forEach((cell) => ws[cell] && (ws[cell].s = {}));
@@ -185,3 +180,4 @@ export default function CombinedTable() {
     </div>
   );
 }
+
