@@ -13,20 +13,23 @@ export default function CombinedTable() {
   const { code } = router.query;  // Get the 'code' from the URL query
 
   useEffect(() => {
-    if (!code) return;  // Ensure code is available before fetching
+    if (!code) {
+      router.push('/school-entry')
+      return;
+    }// Ensure code is available before fetching
 
     const fetchData = async () => {
       // Dynamic fetch school data based on 'code'
       const { data: schoolData } = await supabase
         .from('schools')
         .select('school_name, school_id, coordinator_name, coordinator_phone')
-        .eq('school_id', code)  // Use the 'code' from the URL
+        .eq('school_id', code.toUpperCase())  // Use the 'code' from the URL
         .single();
 
       const { data: participantData } = await supabase
         .from('participants')
         .select('participant_name, class, event_id')
-        .eq('school_id', code);  // Use the 'code' from the URL
+        .eq('school_id', code.toUpperCase());  // Use the 'code' from the URL
 
       const { data: eventsData } = await supabase
         .from('events')
@@ -66,17 +69,54 @@ export default function CombinedTable() {
     };
 
     fetchData();
-  }, [code]);  // Dependency on 'code' ensures data fetch when the 'code' changes
+  }, [code.toUpperCase()]);  // Dependency on 'code' ensures data fetch when the 'code' changes
 
   const exportToExcel = () => {
-    const ws1 = XLSX.utils.json_to_sheet(eventSummary);
-    const ws2 = XLSX.utils.json_to_sheet(participants);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws1, 'Event Summary');
-    XLSX.utils.book_append_sheet(wb, ws2, 'Participants');
-    XLSX.writeFile(wb, `School_${code}_Report.xlsx`);
-  };
+const rows: any[] = [];
 
+    // --- School Info ---
+    rows.push(['School Details']);
+    rows.push(['School', schoolInfo.school_name]);
+    rows.push(['Code', schoolInfo.school_id]);
+    rows.push(['Teacher Escort', schoolInfo.coordinator_name]);
+    rows.push(['Contact', schoolInfo.coordinator_phone]);
+    rows.push([]); // empty line
+
+    // --- Participants ---
+    rows.push(['Participants']);
+    rows.push(['Name', 'Class']);
+    participants.forEach((p) => {
+      rows.push([p.participant_name, p.class]);
+    });
+    rows.push([]); // empty line
+
+    // --- Event Summary ---
+    rows.push(['Event Summary']);
+    rows.push(['S. No', 'Event', 'Total', 'Power Rangerz', 'Avengers', 'Titans']);
+    eventSummary.forEach((e: any, i: number) => {
+      rows.push([
+        i + 1,
+        e.event_name,
+        e.no_of_participants,
+        e.power_rangerz.join(', '),
+        e.avengers.join(', '),
+        e.titans.join(', ')
+      ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    // Style headers: bold
+    const bold = { font: { bold: true } };
+    ['A1', 'A6', 'A8'].forEach((cell) => ws[cell] && (ws[cell].s = bold));
+    ['A2', 'A3', 'A4', 'A5', 'A7', 'B7'].forEach((cell) => ws[cell] && (ws[cell].s = {}));
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Report');
+    XLSX.writeFile(wb, `School_${schoolCode}_Report.xlsx`);
+  };
+  
+  if (!loaded) return null;
+  
   return (
     <div className="p-4 space-y-6">
       <h2 className="text-2xl font-bold">School Details</h2>
