@@ -1,28 +1,32 @@
-// File: src/pages/CombinedTable.tsx
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import * as XLSX from 'xlsx';
+import { useRouter } from 'next/router';  // Import the router
 
 export default function CombinedTable() {
   const [schoolInfo, setSchoolInfo] = useState<any>(null);
   const [participants, setParticipants] = useState<any[]>([]);
   const [eventSummary, setEventSummary] = useState<any[]>([]);
 
-  const schoolId = 'SCH001'; // change dynamically if needed
+  const router = useRouter();
+  const { code } = router.query;  // Get the 'code' from the URL query
 
   useEffect(() => {
+    if (!code) return;  // Ensure code is available before fetching
+
     const fetchData = async () => {
+      // Dynamic fetch school data based on 'code'
       const { data: schoolData } = await supabase
         .from('schools')
         .select('school_name, school_id, coordinator_name, coordinator_phone')
-        .eq('school_id', schoolId)
+        .eq('school_id', code)  // Use the 'code' from the URL
         .single();
 
       const { data: participantData } = await supabase
         .from('participants')
         .select('participant_name, class, event_id')
-        .eq('school_id', schoolId);
+        .eq('school_id', code);  // Use the 'code' from the URL
 
       const { data: eventsData } = await supabase
         .from('events')
@@ -62,7 +66,7 @@ export default function CombinedTable() {
     };
 
     fetchData();
-  }, []);
+  }, [code]);  // Dependency on 'code' ensures data fetch when the 'code' changes
 
   const exportToExcel = () => {
     const ws1 = XLSX.utils.json_to_sheet(eventSummary);
@@ -70,7 +74,7 @@ export default function CombinedTable() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws1, 'Event Summary');
     XLSX.utils.book_append_sheet(wb, ws2, 'Participants');
-    XLSX.writeFile(wb, `School_${schoolId}_Report.xlsx`);
+    XLSX.writeFile(wb, `School_${code}_Report.xlsx`);
   };
 
   return (
