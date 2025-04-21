@@ -360,7 +360,7 @@ const Register = () => {
     if (!category) return;
 
     // For this implementation, we'll use the max_participants as our required minimum
-    // since there's no min_participants field in the schema
+    // If there's no specific min_participants field, we'll create at least 1 participant
     const minParticipants = Math.max(1, eventCategoryLink.max_participants);
     
     // Check if we already have participants for this event/category
@@ -721,57 +721,48 @@ const Register = () => {
                                     <div className="bg-white p-4 rounded-md shadow-sm">
                                       <h4 className="font-medium text-sm mb-3">Add participants:</h4>
                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {event.categoryDetails?.map((category) => (
-                                          <div key={category.category_id} className="border p-3 rounded">
-                                            <div className="flex items-center justify-between mb-2">
-                                              <span className="font-medium text-sm">
-                                                {category.category_name}
-                                              </span>
-                                              <span className="text-xs text-gray-500">
-                                                Classes {category.min_class}-{category.max_class}
-                                              </span>
+                                        {event.categoryDetails?.map((category) => {
+                                          // Check if this category is already added
+                                          const isAlreadyAdded = participants.some(p => 
+                                            p.event_id === eventId && 
+                                            p.category_id === category.category_id
+                                          );
+                                          
+                                          return (
+                                            <div key={category.category_id} className="border p-3 rounded">
+                                              <div className="flex items-center justify-between mb-2">
+                                                <span className="font-medium text-sm">
+                                                  {category.category_name}
+                                                </span>
+                                                <span className="text-xs text-gray-500">
+                                                  Classes {category.min_class}-{category.max_class}
+                                                </span>
+                                              </div>
+                                              
+                                              <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                  if (!isAlreadyAdded) {
+                                                    // Call the function to initialize minimum participants
+                                                    initializeParticipantsForCategory(eventId, category.category_id);
+                                                  } else {
+                                                    // If already added, show a message
+                                                    toast({
+                                                      title: "Category Already Added",
+                                                      description: "This category has already been selected.",
+                                                    });
+                                                  }
+                                                }}
+                                                className="w-full mt-1"
+                                                disabled={isAlreadyAdded}
+                                              >
+                                                {isAlreadyAdded ? "Category Selected" : "Select Category"}
+                                              </Button>
                                             </div>
-                                            
-                                            <Button
-                                              type="button"
-                                              variant="outline"
-                                              size="sm"
-                                              onClick={() => {
-                                                // Auto-initialize if this is the first time
-                                                if (participants.filter(p => 
-                                                  p.event_id === eventId && 
-                                                  p.category_id === category.category_id
-                                                ).length === 0) {
-                                                  initializeParticipantsForCategory(eventId, category.category_id);
-                                                } else {
-                                                  // Add additional participant
-                                                  addParticipantForEvent(eventId, category.category_id);
-                                                }
-                                              }}
-                                              className="w-full mt-1"
-                                              disabled={
-                                                // Disable if participants already maxed out
-                                                participants.filter(p => 
-                                                  p.event_id === eventId && 
-                                                  p.category_id === category.category_id
-                                                ).length >= (
-                                                  // Find the event category link to get max participants
-                                                  event.categories.find(link => 
-                                                    link.category_id === category.category_id
-                                                  )?.max_participants || 0
-                                                )
-                                              }
-                                            >
-                                              {participants.filter(p => 
-                                                p.event_id === eventId && 
-                                                p.category_id === category.category_id
-                                              ).length === 0 
-                                                ? "Select Category" 
-                                                : "Add Participant"
-                                              }
-                                            </Button>
-                                          </div>
-                                        ))}
+                                          );
+                                        })}
                                       </div>
                                     </div>
                                     
@@ -799,6 +790,11 @@ const Register = () => {
                                                 );
                                                 setParticipants(updatedParticipants);
                                                 form.setValue("participants", updatedParticipants);
+                                                
+                                                toast({
+                                                  title: "Category Removed",
+                                                  description: `${category.category_name} category has been removed.`
+                                                });
                                               }}
                                               className="text-red-500 h-8"
                                             >
@@ -824,7 +820,7 @@ const Register = () => {
                                                     {/* No individual participant remove buttons as per requirement */}
                                                   </div>
                                                   
-                                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div>
                                                       <FormLabel>Name</FormLabel>
                                                       <Input
