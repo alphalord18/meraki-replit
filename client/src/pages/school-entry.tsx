@@ -10,7 +10,7 @@ export default function SchoolEntry() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim()) return;
-    router.push(`/school-daata?code=${code.trim().toUpperCase()}`);
+    router.push(`/school-data?code=${code.trim().toUpperCase()}`);
   };
 
   return (
