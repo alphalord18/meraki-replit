@@ -13,6 +13,7 @@ import Sponsors from "@/pages/sponsors";
 import Register from "@/pages/register";
 import Contact from "@/pages/contact";
 import NotFound from "@/pages/not-found";
+import CombinedTable from "@/pages/registeredschoolsdata";
 
 function Router() {
   return (
@@ -27,6 +28,7 @@ function Router() {
           <Route path="/sponsors" component={Sponsors} />
           <Route path="/register" component={Register} />
           <Route path="/contact" component={Contact} />
+          <Route path="/registeredschoolsdata" component={Data} />
           <Route component={NotFound} />
         </Switch>
       </main>
