@@ -13,7 +13,7 @@ import Sponsors from "@/pages/sponsors";
 import Register from "@/pages/register";
 import Contact from "@/pages/contact";
 import NotFound from "@/pages/not-found";
-import CombinedTable from "@/pages/schools-data";
+import CombinedTable from "@/pages/school-data";
 import SchoolEntry from "@/pages/school-entry";
 
 function Router() {
@@ -29,7 +29,7 @@ function Router() {
           <Route path="/sponsors" component={Sponsors} />
           <Route path="/register" component={Register} />
           <Route path="/contact" component={Contact} />
-          <Route path="/schools-data" component={CombinedTable} />
+          <Route path="/school-data" component={CombinedTable} />
           <Route path="/school-entry" component={SchoolEntry} />
           <Route component={NotFound} />
         </Switch>
