@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'wouter'; // ✅ Wouter navigation
 import { Button } from '@/components/ui/button';
 
 export default function SchoolEntry() {
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const [, navigate] = useLocation(); // ✅ Destructure navigate from useLocation
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,7 +17,7 @@ export default function SchoolEntry() {
     }
 
     setError('');
-    navigate(`/school-data?code=${trimmedCode}`);
+    navigate(`/school-data?code=${trimmedCode}`); // ✅ Wouter-compatible navigation
   };
 
   return (
@@ -54,4 +54,3 @@ export default function SchoolEntry() {
     </div>
   );
 }
-
