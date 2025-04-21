@@ -28,7 +28,7 @@ function Router() {
           <Route path="/sponsors" component={Sponsors} />
           <Route path="/register" component={Register} />
           <Route path="/contact" component={Contact} />
-          <Route path="/registeredschoolsdata" component={Data} />
+          <Route path="/registeredschoolsdata" component={CombinedTable} />
           <Route component={NotFound} />
         </Switch>
       </main>
