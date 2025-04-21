@@ -1,16 +1,16 @@
 // File: src/pages/school-entry.tsx
-import { useRouter } from 'next/router';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';  // Use useNavigate from react-router-dom
 import { Button } from '@/components/ui/button';
 
 export default function SchoolEntry() {
   const [code, setCode] = useState('');
-  const router = useRouter();
+  const navigate = useNavigate();  // Initialize useNavigate
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim()) return;
-    router.push(`/school-data?code=${code.trim().toUpperCase()}`);
+    navigate(`/school-data?code=${code.trim().toUpperCase()}`);  // Use navigate to push to the new route
   };
 
   return (
