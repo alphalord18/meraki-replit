@@ -48,7 +48,7 @@ const Contact: React.FC = () => {
       // Send email using EmailJS - this happens directly from the browser
       // Replace these IDs with your actual EmailJS service and template IDs
       const response = await emailjs.send(
-        'wLTRLYswSgHimIgvOySIs',
+        'service_meraki',
         'template_email',
         templateParams
       );
