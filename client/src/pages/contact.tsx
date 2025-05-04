@@ -26,7 +26,7 @@ const Contact: React.FC = () => {
   const { toast } = useToast();
 
   // Initialize EmailJS with your user ID (this should be done at the app level ideally)
-  emailjs.init(G9JIIT4BFWZuaL1k5);
+  emailjs.init('G9JIIT4BFWZuaL1k5');
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -48,8 +48,8 @@ const Contact: React.FC = () => {
       // Send email using EmailJS - this happens directly from the browser
       // Replace these IDs with your actual EmailJS service and template IDs
       const response = await emailjs.send(
-        wLTRLYswSgHimIgvOySIs,
-        template_email,
+        'wLTRLYswSgHimIgvOySIs',
+        'template_email',
         templateParams
       );
 
