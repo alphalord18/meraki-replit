@@ -6,15 +6,14 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Phone, MapPin } from "lucide-react";
 import type { FormEvent } from "react";
+import emailjs from '@emailjs/browser';
 
-// Define email-related types
-interface MailOptions {
-  from: string;
-  to: string;
+// Define email data interface
+interface EmailData {
+  name: string;
+  email: string;
   subject: string;
-  text: string;
-  html: string;
-  replyTo: string;
+  message: string;
 }
 
 const Contact: React.FC = () => {
@@ -26,62 +25,48 @@ const Contact: React.FC = () => {
   const [pageLoaded, setPageLoaded] = useState<boolean>(false);
   const { toast } = useToast();
 
+  // Initialize EmailJS with your user ID (this should be done at the app level ideally)
+  emailjs.init(import.process.env.VITE_EMAILJS_PUBLIC_KEY);
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     
     try {
-      // Using nodemailer directly in the component
-      // Import nodemailer dynamically to avoid server/client mismatch
-      const nodemailer = await import('nodemailer');
-      
-      // Create transporter with environment variables
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: 'aaravgarg649@gmail.com',
-          pass: process.env.NEXT_PUBLIC_EMAIL_APP_PASSWORD // Using environment variable for app password
-        }
-      });
-
-      // Email options
-      const mailOptions: MailOptions = {
-        from: 'aaravgarg649@gmail.com',
-        to: 'aaravgarg1812@gmail.com',
+      // Prepare template parameters for EmailJS
+      const templateParams = {
+        from_name: name,
+        from_email: "aaravgarg649@gmail.com",
+        to_email: "aaravgarg1812@gmail.com",
+        reply_to: email,
         subject: subject || `New message from ${name}`,
-        text: `
-          Name: ${name}
-          Email: ${email}
-          Message: ${message}
-        `,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px;">
-            <h2>New Contact Form Submission</h2>
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Subject:</strong> ${subject}</p>
-            <div style="margin-top: 20px;">
-              <p><strong>Message:</strong></p>
-              <p>${message.replace(/\n/g, '<br>')}</p>
-            </div>
-          </div>
-        `,
-        replyTo: email
+        message: message,
+        name: name,
+        email: email
       };
 
-      // Send email
-      await transporter.sendMail(mailOptions);
-      
-      toast({
-        title: "Message sent",
-        description: "We'll get back to you soon!",
-      });
-      
-      // Reset form
-      setName("");
-      setEmail("");
-      setSubject("");
-      setMessage("");
+      // Send email using EmailJS - this happens directly from the browser
+      // Replace these IDs with your actual EmailJS service and template IDs
+      const response = await emailjs.send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        templateParams
+      );
+
+      if (response.status === 200) {
+        toast({
+          title: "Message sent",
+          description: "We'll get back to you soon!",
+        });
+        
+        // Reset form
+        setName("");
+        setEmail("");
+        setSubject("");
+        setMessage("");
+      } else {
+        throw new Error("Failed to send email");
+      }
     } catch (error) {
       console.error("Error sending email:", error);
       toast({
