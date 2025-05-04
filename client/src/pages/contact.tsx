@@ -26,7 +26,7 @@ const Contact: React.FC = () => {
   const { toast } = useToast();
 
   // Initialize EmailJS with your user ID (this should be done at the app level ideally)
-  emailjs.init(import.process.env.VITE_EMAILJS_PUBLIC_KEY);
+  emailjs.init(process.env.VITE_EMAILJS_PUBLIC_KEY);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -48,8 +48,8 @@ const Contact: React.FC = () => {
       // Send email using EmailJS - this happens directly from the browser
       // Replace these IDs with your actual EmailJS service and template IDs
       const response = await emailjs.send(
-        import.process.env.VITE_EMAILJS_SERVICE_ID,
-        import.process.env.VITE_EMAILJS_TEMPLATE_ID,
+        process.env.VITE_EMAILJS_SERVICE_ID,
+        process.env.VITE_EMAILJS_TEMPLATE_ID,
         templateParams
       );
 
