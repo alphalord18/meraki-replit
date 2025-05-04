@@ -48,8 +48,8 @@ const Contact: React.FC = () => {
       // Send email using EmailJS - this happens directly from the browser
       // Replace these IDs with your actual EmailJS service and template IDs
       const response = await emailjs.send(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID,
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        import.process.env.VITE_EMAILJS_SERVICE_ID,
+        import.process.env.VITE_EMAILJS_TEMPLATE_ID,
         templateParams
       );
 
