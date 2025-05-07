@@ -108,11 +108,18 @@ const participantSchema = z.object({
     .min(1, "Slot number must be at least 1"),
 });
 
+// Modified schema - school is now partial for the first step
 const registrationSchema = z.object({
   school_code: z.string(),
-  school: schoolSchema,
+  school: z.object({
+    school_name: z.string(),
+    address: z.string(),
+    coordinator_name: z.string().optional(), // Make optional for first step
+    coordinator_email: z.string().email().optional(), // Make optional for first step
+    coordinator_phone: z.string().optional(), // Make optional for first step
+  }),
   participants: z.array(participantSchema)
-    .min(1, "At least one participant is required"),
+    .optional(), // Optional until we reach the participants step
 });
 
 type RegistrationData = z.infer<typeof registrationSchema>;
@@ -152,8 +159,43 @@ const Register = () => {
   const [schoolData, setSchoolData] = useState<School | null>(null);
   const [isVerifyingCode, setIsVerifyingCode] = useState(false);
 
+  // Use different validation schema based on the current step
+  const getValidationSchema = (step: number) => {
+    switch(step) {
+      case 0:
+        return z.object({
+          school_code: z.string().min(3, "School code must be at least 3 characters"),
+          school: z.object({
+            school_name: z.string(),
+            address: z.string(),
+            coordinator_name: z.string().optional(),
+            coordinator_email: z.string().email().optional(),
+            coordinator_phone: z.string().optional(),
+          }),
+          participants: z.array(participantSchema).optional(),
+        });
+      case 1:
+        return z.object({
+          school_code: z.string(),
+          school: z.object({
+            school_name: z.string(),
+            address: z.string(),
+            coordinator_name: z.string().min(3, "Coordinator name must be at least 3 characters"),
+            coordinator_email: z.string().email("Invalid email address"),
+            coordinator_phone: z.string().regex(
+              /^\+?[0-9]{10,12}$/,
+              "Phone number must be 10-12 digits"
+            ),
+          }),
+          participants: z.array(participantSchema).optional(),
+        });
+      default:
+        return registrationSchema;
+    }
+  };
+
   const form = useForm<RegistrationData>({
-    resolver: zodResolver(registrationSchema),
+    resolver: zodResolver(getValidationSchema(currentStep)),
     defaultValues: {
       school_code: "",
       school: {
@@ -165,7 +207,14 @@ const Register = () => {
       },
       participants: [],
     },
+    mode: "onChange",
   });
+
+  // Update resolver when step changes
+  useEffect(() => {
+    form.clearErrors();
+    form.setError = () => form.clearErrors();
+  }, [currentStep, form]);
 
   // Fetch events and categories on component mount
   useEffect(() => {
@@ -266,6 +315,17 @@ const Register = () => {
       form.setValue("school.school_name", data.school_name);
       form.setValue("school.address", data.address);
       
+      // If coordinator details exist, prefill them too
+      if (data.coordinator_name) {
+        form.setValue("school.coordinator_name", data.coordinator_name);
+      }
+      if (data.coordinator_email) {
+        form.setValue("school.coordinator_email", data.coordinator_email);
+      }
+      if (data.coordinator_phone) {
+        form.setValue("school.coordinator_phone", data.coordinator_phone);
+      }
+      
       setIsVerifyingCode(false);
       return true;
     } catch (error) {
@@ -320,34 +380,40 @@ const Register = () => {
       
       console.log("Submitting participants:", participantData);
       
-      // Create a school object with the existing school ID
-      const school = {
-        ...formData.school,
-        school_id: formData.school_code
-      };
+      // Use the existing school ID from schoolData
+      const schoolId = schoolData.school_id;
       
       // Update only coordinator details in the school table
-      const { data: schoolUpdateData, error: schoolUpdateError } = await supabase
+      const { error: schoolUpdateError } = await supabase
         .from('schools')
         .update({
           coordinator_name: formData.school.coordinator_name,
           coordinator_email: formData.school.coordinator_email,
           coordinator_phone: formData.school.coordinator_phone
         })
-        .eq('school_id', formData.school_code);
+        .eq('school_id', schoolId);
       
       if (schoolUpdateError) {
         throw new Error(`Failed to update coordinator details: ${schoolUpdateError.message}`);
       }
       
-      // Add participants to the participants table
-      // Note: This assumes your completeRegistration function can handle the case where school already exists
-      // You may need to modify the completeRegistration function to skip school creation
-      const { school: registeredSchool, participants: registeredParticipants } = await completeRegistration(
-        school,
-        participantData,
-        true // Add a flag to indicate school already exists
-      );
+      // Add participants directly to the participants table
+      for (const participant of participantData) {
+        const { error: participantError } = await supabase
+          .from('participants')
+          .insert([{
+            school_id: schoolId,
+            event_id: participant.event_id,
+            category_id: participant.category_id,
+            participant_name: participant.participant_name,
+            class: participant.class,
+            slot: participant.slot
+          }]);
+          
+        if (participantError) {
+          throw new Error(`Failed to add participant: ${participantError.message}`);
+        }
+      }
       
       toast({
         title: "Registration Successful!",
@@ -429,10 +495,6 @@ const Register = () => {
     };
 
     setParticipants(prev => [...prev, newParticipant]);
-    
-    // Update form value
-    const updatedParticipants = [...participants, newParticipant];
-    form.setValue("participants", updatedParticipants);
   };
   
   // Auto-add minimum participants for a category
@@ -471,9 +533,8 @@ const Register = () => {
       slot: index + 1
     }));
     
-    // Add to state and form
+    // Add to state
     setParticipants(prev => [...prev, ...newParticipants]);
-    form.setValue("participants", [...participants, ...newParticipants]);
   };
 
   const updateParticipant = (index: number, field: keyof ParticipantFormData, value: any) => {
@@ -486,7 +547,6 @@ const Register = () => {
     };
     
     setParticipants(newParticipants);
-    form.setValue("participants", newParticipants);
   };
 
   const removeParticipant = (index: number) => {
@@ -516,10 +576,12 @@ const Register = () => {
     });
     
     setParticipants(updatedParticipants);
-    form.setValue("participants", updatedParticipants);
   };
 
   const validateStep = async () => {
+    // Update resolver to validate only the current step
+    form.clearErrors();
+    
     switch (currentStep) {
       case 0:
         return await verifySchoolCode();
@@ -591,7 +653,7 @@ const Register = () => {
           return false;
         }
         
-        return await form.trigger(["participants"]);
+        return true;
       default:
         return true;
     }
