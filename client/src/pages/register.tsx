@@ -35,15 +35,22 @@ import type {
 } from "@/types/registration";
 
 // Define schemas based on the PostgreSQL database structure
+const schoolCodeSchema = z.object({
+  school_code: z
+    .string()
+    .min(3, "School code must be at least 3 characters")
+    .max(10, "School code must not exceed 10 characters")
+    .regex(
+      /^[a-zA-Z0-9]+$/,
+      "School code can only contain letters and numbers",
+    ),
+});
+
 const schoolSchema = z.object({
   school_name: z
     .string()
     .min(3, "School name must be at least 3 characters")
-    .max(100, "School name must not exceed 100 characters")
-    .regex(
-      /^[a-zA-Z0-9\s'.&-]+$/,
-      "School name can only contain letters, numbers, spaces, and basic punctuation",
-    ),
+    .max(100, "School name must not exceed 100 characters"),
 
   address: z
     .string()
@@ -102,6 +109,7 @@ const participantSchema = z.object({
 });
 
 const registrationSchema = z.object({
+  school_code: z.string(),
   school: schoolSchema,
   participants: z.array(participantSchema)
     .min(1, "At least one participant is required"),
@@ -111,8 +119,8 @@ type RegistrationData = z.infer<typeof registrationSchema>;
 
 const formSteps = [
   {
-    title: "School Information",
-    fields: ["school.school_name", "school.address"] as const,
+    title: "School Code",
+    fields: ["school_code"] as const,
   },
   {
     title: "Coordinator Details",
@@ -132,13 +140,6 @@ const formSteps = [
   },
 ];
 
-// Generate a unique school ID that fits within the VARCHAR(10) limit
-const generateSchoolId = (): string => {
-  const randomPart = Math.floor(Math.random() * 100).toString().padStart(2, '0');
-  const timestamp = Date.now().toString().slice(-4);
-  return `S${timestamp}${randomPart}`;
-};
-
 const Register = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const { toast } = useToast();
@@ -148,10 +149,13 @@ const Register = () => {
   const [selectedEventIds, setSelectedEventIds] = useState<number[]>([]);
   const [participants, setParticipants] = useState<ParticipantFormData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [schoolData, setSchoolData] = useState<School | null>(null);
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
 
   const form = useForm<RegistrationData>({
     resolver: zodResolver(registrationSchema),
     defaultValues: {
+      school_code: "",
       school: {
         school_name: "",
         address: "",
@@ -223,6 +227,59 @@ const Register = () => {
     fetchData();
   }, [toast]);
 
+  const verifySchoolCode = async () => {
+    const schoolCode = form.getValues("school_code");
+    
+    if (!schoolCode) {
+      toast({
+        variant: "destructive",
+        title: "Required",
+        description: "Please enter a school code",
+      });
+      return false;
+    }
+    
+    setIsVerifyingCode(true);
+    
+    try {
+      // Fetch school details from the database
+      const { data, error } = await supabase
+        .from('schools')
+        .select('*')
+        .eq('school_id', schoolCode)
+        .single();
+      
+      if (error || !data) {
+        toast({
+          variant: "destructive",
+          title: "Invalid School Code",
+          description: "The school code you entered does not exist in our database.",
+        });
+        setIsVerifyingCode(false);
+        return false;
+      }
+      
+      // School found, update the form with school details
+      setSchoolData(data);
+      
+      // Prefill the school details in the form
+      form.setValue("school.school_name", data.school_name);
+      form.setValue("school.address", data.address);
+      
+      setIsVerifyingCode(false);
+      return true;
+    } catch (error) {
+      console.error("Error verifying school code:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to verify school code. Please try again.",
+      });
+      setIsVerifyingCode(false);
+      return false;
+    }
+  };
+
   const onSubmit = async (formData: RegistrationData) => {
     setIsSubmitting(true);
     try {
@@ -241,6 +298,17 @@ const Register = () => {
         return;
       }
       
+      // Ensure we have a valid school code
+      if (!schoolData || !formData.school_code) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "School information is missing. Please start over.",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      
       // Process the participant data to ensure class is valid
       const participantData = participants.map(participant => ({
         event_id: participant.event_id,
@@ -252,21 +320,45 @@ const Register = () => {
       
       console.log("Submitting participants:", participantData);
       
-      // Use our registration service to complete the registration
-      const { school, participants: registeredParticipants } = await completeRegistration(
-        formData.school,
-        participantData
+      // Create a school object with the existing school ID
+      const school = {
+        ...formData.school,
+        school_id: formData.school_code
+      };
+      
+      // Update only coordinator details in the school table
+      const { data: schoolUpdateData, error: schoolUpdateError } = await supabase
+        .from('schools')
+        .update({
+          coordinator_name: formData.school.coordinator_name,
+          coordinator_email: formData.school.coordinator_email,
+          coordinator_phone: formData.school.coordinator_phone
+        })
+        .eq('school_id', formData.school_code);
+      
+      if (schoolUpdateError) {
+        throw new Error(`Failed to update coordinator details: ${schoolUpdateError.message}`);
+      }
+      
+      // Add participants to the participants table
+      // Note: This assumes your completeRegistration function can handle the case where school already exists
+      // You may need to modify the completeRegistration function to skip school creation
+      const { school: registeredSchool, participants: registeredParticipants } = await completeRegistration(
+        school,
+        participantData,
+        true // Add a flag to indicate school already exists
       );
       
       toast({
         title: "Registration Successful!",
-        description: `Your school ID is ${school.school_id}. Please keep this for your records.`,
+        description: `Participants have been registered for ${schoolData.school_name}.`,
       });
 
       form.reset();
       setParticipants([]);
       setSelectedEventIds([]);
       setCurrentStep(0);
+      setSchoolData(null);
     } catch (error: any) {
       console.error("Registration error:", error);
       toast({
@@ -430,7 +522,7 @@ const Register = () => {
   const validateStep = async () => {
     switch (currentStep) {
       case 0:
-        return await form.trigger(["school.school_name", "school.address"]);
+        return await verifySchoolCode();
       case 1:
         return await form.trigger([
           "school.coordinator_name",
@@ -565,6 +657,18 @@ const Register = () => {
               </div>
             </div>
 
+            {/* Display school details when available */}
+            {schoolData && currentStep > 0 && (
+              <div className="bg-gray-50 p-4 rounded-md mb-6 border border-gray-200">
+                <h3 className="font-medium text-gray-700 mb-1">School Information</h3>
+                <div className="text-sm">
+                  <p><span className="font-medium">School:</span> {schoolData.school_name}</p>  
+                  <p><span className="font-medium">Address:</span> {schoolData.address}</p>
+                  <p><span className="font-medium">School ID:</span> {schoolData.school_id}</p>
+                </div>
+              </div>
+            )}
+
             <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
@@ -580,28 +684,18 @@ const Register = () => {
                     >
                       {currentStep === 0 && (
                         <>
-                          <h2 className="font-semibold text-xl text-[#2E4A7D]">School Details</h2>
+                          <h2 className="font-semibold text-xl text-[#2E4A7D]">Enter School Code</h2>
+                          <p className="text-sm text-gray-600 mb-4">
+                            Please enter the school code provided to you. This will fetch your school details.
+                          </p>
                           <FormField
                             control={form.control}
-                            name="school.school_name"
+                            name="school_code"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>School Name</FormLabel>
+                                <FormLabel>School Code</FormLabel>
                                 <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="school.address"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>School Address</FormLabel>
-                                <FormControl>
-                                  <Input {...field} />
+                                  <Input {...field} placeholder="Enter your school code" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
