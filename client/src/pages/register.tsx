@@ -702,7 +702,7 @@ const Register = () => {
                 <div
                   className="bg-[#2E4A7D] h-2 rounded-full transition-all"
                   style={{
-                    width: `${((currentStep) / (formSteps.length)) * 100}%`,
+                    width: `${((currentStep + 1) / (formSteps.length)) * 100}%`,
                   }}
                 />
               </div>
