@@ -578,6 +578,7 @@ const Register = () => {
     setParticipants(updatedParticipants);
   };
 
+  // Line 527
   const validateStep = async () => {
     // Update resolver to validate only the current step
     form.clearErrors();
@@ -602,43 +603,31 @@ const Register = () => {
         }
         return true;
       case 3:
-        // Make sure we have filled participants for at least one category per selected event
-        const filledParticipantsByEvent = new Map<number, boolean>();
+        // Make sure we have filled participants for each selected event
+        const eventsMissingParticipants: string[] = [];
         
-        // Initialize map with all selected events as false (not having filled participants yet)
-        selectedEventIds.forEach(eventId => {
-          filledParticipantsByEvent.set(eventId, false);
-        });
-        
-        // Check if we have filled participants for each selected event
-        for (const participant of participants) {
-          // Skip unfilled participants
-          if (!participant.participant_name || participant.class === 0) {
-            continue;
-          }
+        // Check each selected event
+        for (const eventId of selectedEventIds) {
+          const event = events.find(e => e.event_id === eventId);
+          if (!event) continue;
           
-          // If this is a participant for a selected event, mark it as having filled participants
-          if (selectedEventIds.includes(participant.event_id)) {
-            filledParticipantsByEvent.set(participant.event_id, true);
+          // Check if this event has any participants with complete information
+          const hasValidParticipants = participants.some(p => 
+            p.event_id === eventId && 
+            p.participant_name && 
+            p.class > 0
+          );
+          
+          if (!hasValidParticipants) {
+            eventsMissingParticipants.push(event.event_name);
           }
         }
         
-        // Check if any selected event doesn't have filled participants
-        const missingEvents: string[] = [];
-        filledParticipantsByEvent.forEach((hasFilledParticipants, eventId) => {
-          if (!hasFilledParticipants) {
-            const event = events.find(e => e.event_id === eventId);
-            if (event) {
-              missingEvents.push(event.event_name);
-            }
-          }
-        });
-        
-        if (missingEvents.length > 0) {
+        if (eventsMissingParticipants.length > 0) {
           toast({
             variant: "destructive",
             title: "Missing Participants",
-            description: `Please add and fill participant details for the following events: ${missingEvents.join(", ")}`,
+            description: `Please add and fill participant details for: ${eventsMissingParticipants.join(", ")}`,
           });
           return false;
         }
@@ -697,12 +686,12 @@ const Register = () => {
         <Card className="max-w-2xl mx-auto">
           <CardContent className="pt-6">
             <div className="mb-8">
-              <div className="flex justify-between mb-2">
+              <div className="flex justify-between mb-4 overflow-x-auto pb-2">
                 {formSteps.map((step, index) => (
                   <div
                     key={step.title}
-                    className={`text-sm ${
-                      index <= currentStep ? "text-[#2E4A7D]" : "text-gray-400"
+                    className={`text-sm whitespace-nowrap px-1 md:px-2 ${
+                      index <= currentStep ? "text-[#2E4A7D] font-medium" : "text-gray-400"
                     }`}
                   >
                     {step.title}
@@ -713,7 +702,7 @@ const Register = () => {
                 <div
                   className="bg-[#2E4A7D] h-2 rounded-full transition-all"
                   style={{
-                    width: `${((currentStep + 1) / formSteps.length) * 100}%`,
+                    width: `${((currentStep) / (formSteps.length - 1)) * 100}%`,
                   }}
                 />
               </div>
