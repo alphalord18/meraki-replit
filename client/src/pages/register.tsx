@@ -74,8 +74,8 @@ const schoolSchema = z.object({
   coordinator_phone: z
     .string()
     .regex(
-      /^\+?[0-9]{10,12}$/,
-      "Phone number must be 10-12 digits, optionally starting with +",
+      /^[0-9]{10}$/,
+      "Phone number must be 10 digits.",
     ),
 });
 
