@@ -121,10 +121,12 @@ export default function CombinedTable() {
       <h2 className="text-2xl font-bold">School Details</h2>
       {schoolInfo && (
         <div className="bg-gray-100 p-4 rounded shadow">
-          <p><strong>School:</strong> {schoolInfo.school_name}</p>
-          <p><strong>Code:</strong> {schoolInfo.school_id}</p>
-          <p><strong>Teacher Escort:</strong> {schoolInfo.coordinator_name}</p>
-          <p><strong>Contact:</strong> {schoolInfo.coordinator_phone}</p>
+          <p><strong>School Name :</strong> {schoolInfo.school_name}</p>
+          <p><strong>School Address :</strong> {schoolInfo.address}</p>
+          <p><strong>School Code : </strong> {schoolInfo.school_id}</p>
+          <p><strong>Teacher Coordinator :</strong> {schoolInfo.coordinator_name}</p>
+          <p><strong>Contact No. :</strong> {schoolInfo.coordinator_phone}</p>
+          <p><strong>Contact Emaol :</strong> {schoolInfo.coordinator_email}</p>
         </div>
       )}
 
