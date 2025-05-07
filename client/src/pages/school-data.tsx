@@ -23,7 +23,7 @@ export default function CombinedTable() {
     const fetchData = async () => {
       const { data: schoolData } = await supabase
         .from('schools')
-        .select('school_name, school_id, coordinator_name, coordinator_phone')
+        .select('school_name, school_id, coordinator_name, coordinator_phone, coordinator_email, address')
         .eq('school_id', code.toUpperCase())
         .single();
 
@@ -76,10 +76,12 @@ export default function CombinedTable() {
     const rows: any[] = [];
 
     rows.push(['School Details']);
-    rows.push(['School', schoolInfo.school_name]);
-    rows.push(['Code', schoolInfo.school_id]);
-    rows.push(['Teacher Escort', schoolInfo.coordinator_name]);
-    rows.push(['Contact', schoolInfo.coordinator_phone]);
+    rows.push(['School Name', schoolInfo.school_name]);
+    rows.push(['School Address', schoolInfo.address]);
+    rows.push(['School Code', schoolInfo.school_id]);
+    rows.push(['Teacher Coordinator', schoolInfo.coordinator_name]);
+    rows.push(['Contact No.', schoolInfo.coordinator_phone]);
+    rows.push(['Contact Email', schoolInfo.coordinator_email]);
     rows.push([]);
 
     rows.push(['Participants']);
