@@ -1,10 +1,8 @@
-import "@/lib/pdfWorker";
+import { pdfjsLib } from "@/lib/pdfWorker"; // ✅ Import configured pdfjs
 import React, { useEffect, useRef, useState } from "react";
 import { FlipBook } from "page-flip";
-import * as pdfjsLib from "pdfjs-dist/build/pdf.mjs";
+
 import "pdfjs-dist/web/pdf_viewer.css";
-
-
 
 const PDF_URL = "/meraki-brochure.pdf"; // Must be in /public
 
@@ -30,8 +28,7 @@ const Brochure: React.FC = () => {
           canvas.height = viewport.height;
 
           await page.render({ canvasContext: context, viewport }).promise;
-          const imgData = canvas.toDataURL();
-          images.push(imgData);
+          images.push(canvas.toDataURL());
         }
 
         if (flipbookRef.current) {
@@ -66,10 +63,7 @@ const Brochure: React.FC = () => {
       {loading ? (
         <p className="text-gray-300">Loading brochure...</p>
       ) : (
-        <div
-          ref={flipbookRef}
-          className="shadow-2xl rounded-xl overflow-hidden"
-        />
+        <div ref={flipbookRef} className="shadow-2xl rounded-xl overflow-hidden" />
       )}
     </div>
   );

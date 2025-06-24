@@ -1,4 +1,6 @@
-import pdfjs from "pdfjs-dist";
+import * as pdfjsLib from "pdfjs-dist";
 
-// 👇 Use CDN or hosted version
-pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// ✅ Set correct worker from CDN
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
+export { pdfjsLib };
