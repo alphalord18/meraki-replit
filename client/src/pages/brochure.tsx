@@ -1,13 +1,12 @@
-// pages/brochure.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { FlipBook } from "page-flip";
 import * as pdfjsLib from "pdfjs-dist";
 import "pdfjs-dist/web/pdf_viewer.css";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+// ✅ Dynamically load correct worker version to avoid mismatch error
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
-const PDF_URL = "/meraki-brochure.pdf"; // Must be inside /public
+const PDF_URL = "/meraki-brochure.pdf"; // Must be in /public
 
 const Brochure: React.FC = () => {
   const flipbookRef = useRef<HTMLDivElement>(null);
@@ -60,7 +59,7 @@ const Brochure: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center py-10 min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+    <div className="flex flex-col items-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 pt-24 px-4">
       <h1 className="text-4xl font-bold mb-6 text-yellow-400">
         Meraki 2025 Brochure Flipbook
       </h1>
