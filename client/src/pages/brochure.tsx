@@ -3,8 +3,7 @@ import { FlipBook } from "page-flip";
 import * as pdfjsLib from "pdfjs-dist";
 import "pdfjs-dist/web/pdf_viewer.css";
 
-// ✅ Dynamically load correct worker version to avoid mismatch error
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+import "@/lib/pdfWorker"; // ✅ Use local worker to avoid 404
 
 const PDF_URL = "/meraki-brochure.pdf"; // Must be in /public
 
