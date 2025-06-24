@@ -1,7 +1,7 @@
 import "@/lib/pdfWorker";
 import React, { useEffect, useRef, useState } from "react";
 import { FlipBook } from "page-flip";
-import * as pdfjsLib from "pdfjs-dist";
+import * as pdfjsLib from "pdfjs-dist/build/pdf.mjs";
 import "pdfjs-dist/web/pdf_viewer.css";
 
 
