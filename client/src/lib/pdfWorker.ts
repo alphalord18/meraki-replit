@@ -1,5 +1,4 @@
-// client/src/lib/pdfWorker.ts
-import * as pdfjsLib from "pdfjs-dist/build/pdf.mjs";
-import worker from "pdfjs-dist/build/pdf.worker.js?worker";
+import pdfjs from "pdfjs-dist";
 
-pdfjsLib.GlobalWorkerOptions.workerPort = new worker();
+// 👇 Use CDN or hosted version
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
