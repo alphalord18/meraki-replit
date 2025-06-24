@@ -1,9 +1,10 @@
+import "@/lib/pdfWorker";
 import React, { useEffect, useRef, useState } from "react";
 import { FlipBook } from "page-flip";
 import * as pdfjsLib from "pdfjs-dist";
 import "pdfjs-dist/web/pdf_viewer.css";
 
-import "@/lib/pdfWorker"; // ✅ Use local worker to avoid 404
+
 
 const PDF_URL = "/meraki-brochure.pdf"; // Must be in /public
 

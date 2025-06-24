@@ -1,4 +1,4 @@
-import * as pdfjsLib from "pdfjs-dist";
-import pdfjsWorker from "pdfjs-dist/webpack"; // ← changed
+import { pdfjs } from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker?worker";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+pdfjs.GlobalWorkerOptions.workerPort = new pdfWorker();

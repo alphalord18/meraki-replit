@@ -3,7 +3,6 @@ import react from "@vitejs/plugin-react";
 import themePlugin from "@replit/vite-plugin-shadcn-theme-json";
 import path, { dirname } from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
-import pdfWorker from "vite-plugin-pdf-worker";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,7 +13,6 @@ export default defineConfig({
     react(),
     runtimeErrorOverlay(),
     themePlugin(),
-    pdfWorker(), // ✅ Add this plugin
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
       ? [
@@ -36,6 +34,9 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       external: ["fs"],
+      output: {
+        inlineDynamicImports: true, // ✅ Required for PDF.js worker
+      },
     },
   },
 });
