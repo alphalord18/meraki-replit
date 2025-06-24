@@ -1,17 +1,16 @@
-import React, { useEffect, useState } from "react";
-import HTMLFlipBook from "react-pageflip";
+// pages/brochure.tsx
+import React, { useEffect, useRef, useState } from "react";
+import { FlipBook } from "page-flip";
 import * as pdfjsLib from "pdfjs-dist";
-import BrochurePage from "@/components/BrochurePage";
 import "pdfjs-dist/web/pdf_viewer.css";
 
-// Set workerSrc manually
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
-const PDF_URL = "/meraki-brochure.pdf"; // PDF must be inside /client/public
+const PDF_URL = "/meraki-brochure.pdf"; // Must be inside /public
 
 const Brochure: React.FC = () => {
-  const [pageImages, setPageImages] = useState<string[]>([]);
+  const flipbookRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,13 +31,26 @@ const Brochure: React.FC = () => {
           canvas.height = viewport.height;
 
           await page.render({ canvasContext: context, viewport }).promise;
-          const imageData = canvas.toDataURL("image/png");
-          images.push(imageData);
+          const imgData = canvas.toDataURL();
+          images.push(imgData);
         }
 
-        setPageImages(images);
+        if (flipbookRef.current) {
+          const flipBook = new FlipBook(flipbookRef.current, {
+            width: 500,
+            height: 700,
+            size: "stretch",
+            drawShadow: true,
+            flippingTime: 1000,
+            showCover: true,
+            usePortrait: false,
+            mobileScrollSupport: true,
+          });
+
+          flipBook.loadFromImages(images);
+        }
       } catch (err) {
-        console.error("Failed to load PDF:", err);
+        console.error("PDF load failed:", err);
       } finally {
         setLoading(false);
       }
@@ -52,39 +64,13 @@ const Brochure: React.FC = () => {
       <h1 className="text-4xl font-bold mb-6 text-yellow-400">
         Meraki 2025 Brochure Flipbook
       </h1>
-
       {loading ? (
         <p className="text-gray-300">Loading brochure...</p>
       ) : (
-        <HTMLFlipBook
-          width={500}
-          height={700}
-          size="stretch"
-          minWidth={315}
-          maxWidth={1000}
-          minHeight={400}
-          maxHeight={1536}
-          maxShadowOpacity={0.5}
-          showCover={true}
-          mobileScrollSupport={true}
-          className="shadow-2xl"
-          style={{}}
-          startPage={0}
-          drawShadow={false}
-          flippingTime={0}
-          usePortrait={false}
-          startZIndex={0}
-          autoSize={false}
-          clickEventForward={false}
-          useMouseEvents={false}
-          swipeDistance={0}
-          showPageCorners={false}
-          disableFlipByClick={false}
-        >
-          {pageImages.map((img, idx) => (
-            <BrochurePage key={idx} imageSrc={img} index={idx} />
-          ))}
-        </HTMLFlipBook>
+        <div
+          ref={flipbookRef}
+          className="shadow-2xl rounded-xl overflow-hidden"
+        />
       )}
     </div>
   );
