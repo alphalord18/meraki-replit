@@ -15,7 +15,7 @@ import Contact from "@/pages/contact";
 import NotFound from "@/pages/not-found";
 import CombinedTable from "@/pages/school-data";
 import SchoolEntry from "@/pages/school-entry";
-import Brochure from "@/pages/Brochure";
+import Brochure from "@/pages/brochure";
 
 function Router() {
   return (
@@ -32,7 +32,7 @@ function Router() {
           <Route path="/contact" component={Contact} />
           <Route path="/school-data" component={CombinedTable} />
           <Route path="/school-entry" component={SchoolEntry} />
-          <Route path="/brochure" component={BrochurePage} />
+          <Route path="/brochure" component={Brochure} />
           <Route component={NotFound} />
         </Switch>
       </main>
