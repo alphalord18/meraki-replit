@@ -87,7 +87,7 @@
     "react-router-dom":  "^7.5.1",
     "dotenv": "^16.4.5",
     "react-flip-page": "^1.1.8",
-    "react-pageflip": "^1.0.15",
+    "react-pageflip": "https://github.com/Nodlik/react-pageflip.git",
     "pdfjs-dist": "^4.2.67"
   },
   "devDependencies": {
