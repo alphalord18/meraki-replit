@@ -8,7 +8,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-export default defineConfig({
+export default defineConfig(async () => ({
   plugins: [
     react(),
     runtimeErrorOverlay(),
@@ -16,9 +16,9 @@ export default defineConfig({
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
       ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer()
-          ),
+          (
+            await import("@replit/vite-plugin-cartographer")
+          ).cartographer(),
         ]
       : []),
   ],
@@ -35,8 +35,8 @@ export default defineConfig({
     rollupOptions: {
       external: ["fs"],
       output: {
-        inlineDynamicImports: true, // ✅ Required for PDF.js worker
+        inlineDynamicImports: true, // 👈 Needed for PDF.js worker in build
       },
     },
   },
-});
+}));
